@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "Ue4c2BU0GyU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\norto\\OneDrive\\Asztali gép\\Asztali gép\\Rendszerfejlesztés\\Jegymester\\Backend\\Jegymester.API\\Jegymester.API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\norto\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.3\\microsoft.aspnetcore.openapi.10.0.3.nupkg.sha512",
+    "C:\\Users\\norto\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
