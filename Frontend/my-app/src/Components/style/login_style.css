@@ -1,0 +1,110 @@
+:root {
+            --cc-blue: #0080ff;
+            --cc-black: #000000;
+        }
+
+        body { font-family: sans-serif; 
+            background-color: var(--cc-black);
+        }
+
+        .top-nav {
+            background-color: var(--cc-black);
+            color: white;
+            padding: 15px 0;
+        }
+
+        .logo-img { height: 60px; }
+
+        .top-nav .nav-link {
+            color: white;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .search-box {
+            background: #ffffff;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .main-nav {
+            background-color: var(--cc-blue);
+            padding: 0;
+        }
+
+        .main-nav .nav-link {
+            color: rgb(255, 255, 255);
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 15px 20px !important;
+
+        }
+
+        .main-nav .nav-link:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        .login-text {
+            color: #bdbcbc;
+        }
+        
+        .login-card {
+            background-color: var(--cc-card);
+            border: none;
+            border-top: 5px solid var(--cc-blue);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .form-control {
+            border: 1px solid #333;
+            color: white;
+            padding: 12px;
+        }
+
+        .form-control:focus {
+            background-color: #333;
+            border-color: var(--cc-blue);
+            color: white;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--cc-blue);
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary:hover {
+            background-color: #0080ff;
+        }
+
+        .login-footer a {
+            color: var(--cc-blue);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .brand-logo {
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--cc-blue);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: var(--cc-blue);
+            text-decoration: none;
+        }
