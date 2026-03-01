@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Jegymester.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9aa36811907d1763c06d5ffea4148fb9fd59270a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e15607aec415b09f49757bdd54c587cb89074f48")]
 [assembly: System.Reflection.AssemblyProductAttribute("Jegymester.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Jegymester.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

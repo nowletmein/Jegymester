@@ -1,0 +1,10 @@
+# Visual Studio files
+.vs/
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.shellmnt
+
+# Node modules (just in case)
+node_modules/
