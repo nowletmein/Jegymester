@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using JegymesterApp.DataContext.Entites;
 
 namespace JegymesterApp.DataContext.Entites
 {
-    internal class Movie
+    public class Movie
     {
         public int Id { get; set; }
         public string Title { get; set; }
