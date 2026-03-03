@@ -22,16 +22,11 @@ namespace JegymesterApp.DataContext.Context
             modelBuilder.Entity<Ticket>()
        .HasOne(t => t.Creator)
        .WithMany()
-       .HasForeignKey(t => t.CreatorUserId)
+       .HasForeignKey(t => t.CreatorId)
        .OnDelete(DeleteBehavior.Restrict);
+        
 
-            modelBuilder.Entity<Ticket>()
-                .HasOne(t => t.Owner)
-                .WithMany(u => u.PurchasedTickets)
-                .HasForeignKey(t => t.OwnerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Ticket>()
+        modelBuilder.Entity<Ticket>()
                 .HasOne(t => t.Screening)
                 .WithMany(s => s.Tickets)
                 .HasForeignKey(t => t.ScreeningId)

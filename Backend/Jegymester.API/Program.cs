@@ -1,4 +1,4 @@
-using JegymesterApp.DataContext.Context; // Adjust this path if your folder is named differently
+using JegymesterApp.DataContext.Context;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
