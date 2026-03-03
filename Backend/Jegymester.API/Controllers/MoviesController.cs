@@ -30,7 +30,7 @@ namespace Jegymester.API.Controllers
         // GET: api/TodoItems/5
         // <snippet_GetByID>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Movie>> GetTodoItem(long id)
+        public async Task<ActionResult<Movie>> GetMovie(long id)
         {
             var MovieItem = await _context.Movies.FindAsync(id);
 
