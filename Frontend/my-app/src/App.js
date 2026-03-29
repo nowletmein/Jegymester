@@ -1,5 +1,9 @@
 import logo from './logo.svg';
 import './App.css';
+import MainPage from './Components/mainpage';
+import RegisterPage from './Components/register';
+import Header from './Components/header';
+import Footer from './Components/footer';
 import Login from './Components/login';
 
 function App() {

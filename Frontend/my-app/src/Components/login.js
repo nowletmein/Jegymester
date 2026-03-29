@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import '../Components/style/login_style.css'; // Make sure the path to your CSS is correct
+import '../Components/style/comp.css'; // Make sure the path to your CSS is correct
+import Header from './header.js';
+import Footer from './footer.js';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,32 +15,7 @@ const Login = () => {
 
   return (
     <div className="bg-dark text-light min-vh-100">
-      {/* Navigation */}
-      <div className="top-nav">
-        <div className="container-fluid px-5">
-          <div className="row align-items-center">
-            <div className="col-md-4">
-              <a href="/">
-                <div className="brand-logo mb-3" style={{ textAlign: 'left', fontSize: '1.5rem' }}>
-                  JEGY<span className="text-white">MESTER</span>
-                </div>
-              </a>
-            </div>
-            <div className="col-md-8 d-flex justify-content-end align-items-center gap-4">
-              <a href="#" className="nav-link"><i className="fas fa-map-marker-alt me-2"></i> Mozi kiválasztása</a>
-              <div className="d-flex align-items-center">
-                <a href="/login" className="nav-link me-2"><i className="fas fa-user me-2"></i> Belépés</a>
-                <span className="text-secondary">|</span>
-                <a href="/register" className="nav-link ms-2">Regisztráció</a>
-              </div>
-              <div className="input-group w-25">
-                <input type="text" className="form-control search-box" placeholder="Keresés..." />
-                <span className="input-group-text search-box"><i className="fas fa-search text-white"></i></span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header />
 
       {/* Main Content */}
       <div className="container d-flex flex-column align-items-center py-5">
@@ -96,30 +73,7 @@ const Login = () => {
       </div>
 
       {/* Footer */}
-      <footer className="footer mt-auto py-5">
-        <div className="container">
-          <div className="row gy-4">
-            <div className="col-lg-4 col-md-6">
-              <div className="brand-logo mb-3" style={{ textAlign: 'left', fontSize: '1.5rem' }}>
-                JEGY<span className="text-white">MESTER</span>
-              </div>
-              <p className="text-secondary">
-                Napjaink legmodernebb moziélménye. Foglaljon jegyet egyszerűen és élvezze a legújabb kasszasikereket IMAX és 4DX minőségben.
-              </p>
-            </div>
-            {/* ... Other footer columns ... */}
-          </div>
-          <hr className="border-secondary my-4" />
-          <div className="row align-items-center">
-            <div className="col-md-6 text-center text-md-start">
-              <span className="text-secondary small">&copy; 2026 JEGYMESTER. Minden jog fenntartva.</span>
-            </div>
-            <div className="col-md-6 text-center text-md-end">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" height="20" className="me-3 opacity-50" />
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
