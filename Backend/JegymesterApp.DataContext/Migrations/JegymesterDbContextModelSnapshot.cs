@@ -44,6 +44,9 @@ namespace JegymesterApp.DataContext.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PicturePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Rateing")
                         .HasColumnType("nvarchar(max)");
 
@@ -54,6 +57,23 @@ namespace JegymesterApp.DataContext.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Movies");
+                });
+
+            modelBuilder.Entity("JegymesterApp.DataContext.Entites.Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Screening", b =>
@@ -155,19 +175,30 @@ namespace JegymesterApp.DataContext.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("RoleUser", b =>
+                {
+                    b.Property<int>("RolesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RolesId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("RoleUser");
+                });
+
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Screening", b =>
                 {
                     b.HasOne("JegymesterApp.DataContext.Entites.Movie", "Movie")
-                        .WithMany()
+                        .WithMany("Screenings")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -199,6 +230,26 @@ namespace JegymesterApp.DataContext.Migrations
                     b.Navigation("Creator");
 
                     b.Navigation("Screening");
+                });
+
+            modelBuilder.Entity("RoleUser", b =>
+                {
+                    b.HasOne("JegymesterApp.DataContext.Entites.Role", null)
+                        .WithMany()
+                        .HasForeignKey("RolesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JegymesterApp.DataContext.Entites.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("JegymesterApp.DataContext.Entites.Movie", b =>
+                {
+                    b.Navigation("Screenings");
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Screening", b =>

@@ -19,10 +19,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\JegymesterApp.DataContext\JegymesterApp.DataContext.csproj" />
+    <ProjectReference Include="..\JegymesterApp.Services\JegymesterApp.Services.csproj" />
   </ItemGroup>
 
 </Project>

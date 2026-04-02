@@ -7,7 +7,8 @@ namespace JegymesterApp.DataContext.Entites
     public class User
     {
         public int Id { get; set; }
-        public string Role { get; set; } = "User";
+        //Create Role Entity
+        public List<Role> Roles { get; set; } = new List<Role>();
         public string Name { get; set; }
         public string Email { get; set; } = "";
         public string Phone { get; set; }

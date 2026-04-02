@@ -16,13 +16,13 @@ namespace JegymesterApp.DataContext.Context
         public DbSet<Screening> Screenings { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<User> Users { get; set; }
-
+        public DbSet<Role> Roles { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Ticket>()
-       .HasOne(t => t.Creator)
+       .HasOne(t => t.User)
        .WithMany()
-       .HasForeignKey(t => t.CreatorId)
+       .HasForeignKey(t => t.UserId)
        .OnDelete(DeleteBehavior.Restrict);
         
 

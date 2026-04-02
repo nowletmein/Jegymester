@@ -5,6 +5,7 @@
 *.user
 *.suo
 *.shellmnt
-
+**/obj/
+**/bin/
 # Node modules (just in case)
 node_modules/

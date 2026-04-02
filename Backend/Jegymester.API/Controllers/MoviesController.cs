@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Jegymester.API.Controllers
 {
-    
-   
-    [Route("api/[controller]")]
+
     [ApiController]
+    [Route("api/[controller]/[action]")]
+
     public class MoviesController : ControllerBase
     {
         private readonly JegymesterDbContext _context;
@@ -38,7 +38,7 @@ namespace Jegymester.API.Controllers
             {
                 return NotFound();
             }
-
+            
             return MovieItem;
         }
         //TODO Movie adatok változtatása | Movie létrehozás | Movie törlés

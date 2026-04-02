@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Beni\\Desktop\\UNI shit\\Rendszer\\Jegymester\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj": {}
+    "F:\\Rendszerfejlesztés\\Jegymester\\Backend\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Beni\\Desktop\\UNI shit\\Rendszer\\Jegymester\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj": {
+    "F:\\Rendszerfejlesztés\\Jegymester\\Backend\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Beni\\Desktop\\UNI shit\\Rendszer\\Jegymester\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj",
+        "projectUniqueName": "F:\\Rendszerfejlesztés\\Jegymester\\Backend\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj",
         "projectName": "JegymesterApp.DataContext",
-        "projectPath": "C:\\Users\\Beni\\Desktop\\UNI shit\\Rendszer\\Jegymester\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj",
-        "packagesPath": "C:\\Users\\Beni\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Beni\\Desktop\\UNI shit\\Rendszer\\Jegymester\\JegymesterApp.DataContext\\obj\\",
+        "projectPath": "F:\\Rendszerfejlesztés\\Jegymester\\Backend\\JegymesterApp.DataContext\\JegymesterApp.DataContext.csproj",
+        "packagesPath": "C:\\Users\\norto\\.nuget\\packages\\",
+        "outputPath": "F:\\Rendszerfejlesztés\\Jegymester\\Backend\\JegymesterApp.DataContext\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Beni\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\norto\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -45,6 +45,30 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[10.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[10.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[10.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[10.0.3, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[10.1.7, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -61,7 +85,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
