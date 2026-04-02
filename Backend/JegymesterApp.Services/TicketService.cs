@@ -9,7 +9,7 @@ namespace JegymesterApp.Services
     public interface ITicketService
     {
         Task<int> Create(TicketCreateDto ticketCreateDto, int? userId);
-        Task<int> VerifyTicket(int ticketId);
+        Task<int> Verify(int ticketId);
         Task<TicketDto> Get(int ticketId);
     }
     public class TicketService : ITicketService
@@ -70,7 +70,7 @@ namespace JegymesterApp.Services
             
         }
 
-        public async Task<int> VerifyTicket(int ticketId)
+        public async Task<int> Verify(int ticketId)
         {
             var ticket = _context.Tickets.FirstOrDefault(x => x.Id == ticketId);
             if (ticket == null) 

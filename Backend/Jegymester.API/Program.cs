@@ -1,5 +1,5 @@
 using JegymesterApp.DataContext.Context;
-using JegymesterApp.Services;
+using JegymesterApp.Services.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

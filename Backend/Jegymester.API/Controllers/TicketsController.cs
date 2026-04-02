@@ -28,7 +28,7 @@ namespace Jegymester.API.Controllers
         [Route("{ticketId}")]
         public async Task<IActionResult> VerifyTicket(int ticketId)
         {
-            var result = await _ticketService.VerifyTicket(ticketId);
+            var result = await _ticketService.Verify(ticketId);
             return Ok(result);
         }
         [HttpGet]
