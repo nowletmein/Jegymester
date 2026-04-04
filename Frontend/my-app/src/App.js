@@ -5,6 +5,8 @@ import RegisterPage from './Components/register';
 import Header from './Components/header';
 import Footer from './Components/footer';
 import Login from './Components/login';
+import MovieSchedule from './Components/movies';
+
 
 function App() {
   /*return (
@@ -27,7 +29,7 @@ function App() {
   );*/
 
   return (
-    <Login />
+    <MovieSchedule />
   );
 }
 
