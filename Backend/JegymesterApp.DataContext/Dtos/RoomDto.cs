@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Jegymester.API.Controllers
+namespace JegymesterApp.DataContext.Dtos
 {
-    public class UsersController
+    public class RoomDto
     {
     }
 }

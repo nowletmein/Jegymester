@@ -14,6 +14,6 @@ namespace JegymesterApp.DataContext.Entites
         public string Phone { get; set; }
         public string Password { get; set; }
         public ICollection<Screening> ShopingCart { get; set; } = new List<Screening>(); //Felhasználó által kosárba rakott vetítések
-        public ICollection<Ticket> PurchasedTickets { get; set; } = new List<Ticket>(); //Felhasználó által vásárolt jegyek
+        public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>(); //Felhasználó által vásárolt jegyek
     }
 }

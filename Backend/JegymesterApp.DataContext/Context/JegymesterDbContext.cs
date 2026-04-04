@@ -17,16 +17,18 @@ namespace JegymesterApp.DataContext.Context
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Room> Rooms { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Ticket>()
        .HasOne(t => t.User)
-       .WithMany()
+       .WithMany(u => u.Tickets)
        .HasForeignKey(t => t.UserId)
        .OnDelete(DeleteBehavior.Restrict);
-        
 
-        modelBuilder.Entity<Ticket>()
+            
+
+            modelBuilder.Entity<Ticket>()
                 .HasOne(t => t.Screening)
                 .WithMany(s => s.Tickets)
                 .HasForeignKey(t => t.ScreeningId)

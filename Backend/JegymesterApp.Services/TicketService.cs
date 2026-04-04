@@ -1,7 +1,6 @@
 ﻿using JegymesterApp.DataContext.Context;
 using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.DataContext.Entites;
-using JegymesterApp.Services;
 using JegymesterApp.Services.Exceptions;
 using Microsoft.EntityFrameworkCore;
 namespace JegymesterApp.Services
@@ -62,8 +61,7 @@ namespace JegymesterApp.Services
             return new TicketDto
             {
                 ScreeningId = ticket.ScreeningId,
-                CreatorId = ticket.UserId,
-                CreatorName = ticket.User.Name,
+                UserId = ticket.UserId,
                 Phone = ticket.Phone,
                 Email = ticket.Email,
             };

@@ -9,8 +9,8 @@ namespace JegymesterApp.DataContext.Dtos
     {
         public int Id { get; set; }
         public int ScreeningId { get; set; }   
-        public int? CreatorId { get; set; }
-        public string? CreatorName { get; set; }
+        public int? UserId { get; set; }
+        public string? UserName { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
         public DateTime PurchaseDate { get; set; }
@@ -20,8 +20,8 @@ namespace JegymesterApp.DataContext.Dtos
     public class TicketCreateDto 
     {
         public int ScreeningId { get; set; }
-        public int? CreatorId { get; set; }
-        public string? CreatorName { get; set; }
+        public int? UserId { get; set; }
+        
         public string Phone { get; set; }
         public string Email { get; set; }
     }

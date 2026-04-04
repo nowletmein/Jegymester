@@ -4,6 +4,7 @@ using JegymesterApp.DataContext.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JegymesterApp.DataContext.Migrations
 {
     [DbContext(typeof(JegymesterDbContext))]
-    partial class JegymesterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260404143753_RoomInit")]
+    partial class RoomInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

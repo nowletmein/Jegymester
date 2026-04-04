@@ -1,7 +1,8 @@
-﻿using System;
+﻿using JegymesterApp.DataContext.Entites;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
-using JegymesterApp.DataContext.Entites;
 namespace JegymesterApp.DataContext.Entites
 {
     public class Ticket
@@ -10,6 +11,8 @@ namespace JegymesterApp.DataContext.Entites
         public int ScreeningId { get; set; }//vetítés amihez tartozik a Ticket
         public Screening Screening { get; set; }
         public int? UserId { get; set; }//Tulajdonos Felhasználója a Ticketnek (Lehet guest is) 
+        
+        [ForeignKey("UserId")]
         public User? User { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }

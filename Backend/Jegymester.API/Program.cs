@@ -1,5 +1,5 @@
 using JegymesterApp.DataContext.Context;
-using JegymesterApp.Services.Services;
+using JegymesterApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +10,8 @@ builder.Services.AddDbContext<JegymesterDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IScreeningService, ScreeningService>();
 
 //Swagger
 builder.Services.AddEndpointsApiExplorer(); 

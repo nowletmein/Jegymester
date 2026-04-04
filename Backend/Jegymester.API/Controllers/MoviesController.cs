@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using JegymesterApp.DataContext.Context;
 using JegymesterApp.DataContext.Entites;
+using JegymesterApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,31 +16,25 @@ namespace Jegymester.API.Controllers
 
     public class MoviesController : ControllerBase
     {
-        private readonly JegymesterDbContext _context;
-        public MoviesController(JegymesterDbContext context)
+        private readonly IMovieService _movieService;
+        public MoviesController(IMovieService movieService)
         {
-            _context = context;
+            _movieService = movieService;
         }
 
         // GET: api/Movies   egy listába vissza adja az összes tárolt filmet
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Movie>>> GetMovies()
+        public async Task<IActionResult> GetAll()
         {
-            return await _context.Movies.ToListAsync();
+
+            return Ok(_movieService.GetAll());
         }
         // GET: api/TodoItems/5
         // <snippet_GetByID>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Movie>> GetMovie(long id)
+        public async Task<IActionResult> Get(int Id)
         {
-            var MovieItem = await _context.Movies.FindAsync(id);
-
-            if (MovieItem == null)
-            {
-                return NotFound();
-            }
-            
-            return MovieItem;
+            return Ok(_movieService.Get(Id));
         }
         //TODO Movie adatok változtatása | Movie létrehozás | Movie törlés
 
