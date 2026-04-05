@@ -16,12 +16,14 @@ namespace Jegymester.API.Controllers
             _screeningService = screeningService;
         }
 
-
-        public async Task<IActionResult> GetWeekly()
-        {
-            return Ok(_screeningService.GetWeekly());
-        }
-
+        [HttpGet]
+         public async Task<IActionResult> GetWeekly()
+         {
+             //return Ok(_screeningService.GetWeekly());
+             throw new NotImplementedException();
+         }
+        [HttpGet]
+        [Route("{Id}")]
         public async Task<IActionResult> Get(int Id) 
         {  
             return Ok(_screeningService.Get(Id)); 

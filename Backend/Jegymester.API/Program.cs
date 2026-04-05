@@ -10,8 +10,8 @@ builder.Services.AddDbContext<JegymesterDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITicketService, TicketService>();
-builder.Services.AddScoped<IMovieService, MovieService>();
-builder.Services.AddScoped<IScreeningService, ScreeningService>();
+//builder.Services.AddScoped<IMovieService, MovieService>();
+//builder.Services.AddScoped<IScreeningService, ScreeningService>();
 
 //Swagger
 builder.Services.AddEndpointsApiExplorer(); 
