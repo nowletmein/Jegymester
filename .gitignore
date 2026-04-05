@@ -9,3 +9,22 @@
 **/bin/
 # Node modules (just in case)
 node_modules/
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Secrets and Env
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# Windows system files
+[Dd]esktop.ini
+Thumbs.db
+ehthumbs.db
+$RECYCLE.BIN/
