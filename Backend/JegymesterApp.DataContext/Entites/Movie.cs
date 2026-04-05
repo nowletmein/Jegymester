@@ -8,7 +8,6 @@ namespace JegymesterApp.DataContext.Entites
     public class Movie
     {
         public int Id { get; set; }
-
         public string? PicturePath { get; set; }
         public string Title { get; set; }
         public string? Description { get; set; }//opcionális: film leírása

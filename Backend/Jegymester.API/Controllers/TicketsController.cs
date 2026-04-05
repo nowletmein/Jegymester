@@ -37,5 +37,10 @@ namespace Jegymester.API.Controllers
             var result = await _ticketService.Get(ticketId);
             return Ok(result);
         }
+        [HttpPost]
+        public async Task<IActionResult> Delete(int ticketId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

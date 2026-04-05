@@ -16,4 +16,8 @@ namespace JegymesterApp.DataContext.Dtos
         public int Length { get; set; }
         public ICollection<ScreeningDto> ScreeningDtos { get; set; } = new List<ScreeningDto>();
     }
+    public class MovieCreateDto
+    {
+
+    }
 }

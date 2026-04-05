@@ -1,4 +1,5 @@
-﻿using JegymesterApp.Services;
+﻿using JegymesterApp.DataContext.Dtos;
+using JegymesterApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,17 @@ namespace Jegymester.API.Controllers
         {  
             return Ok(_screeningService.Get(Id)); 
         }
-
-
+        public async Task<IActionResult> Delete(int Id)
+        {
+            throw new NotImplementedException();
+        }
+        public async Task<IActionResult> Edit(int Id)
+        {
+            throw new NotImplementedException();
+        }
+        public async Task<IActionResult> Create(ScreeningCreateDto screeningCreateDto)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -6,8 +6,7 @@ import Header from './Components/header';
 import Footer from './Components/footer';
 import Login from './Components/login';
 import MovieSchedule from './Components/movies';
-
-
+import MovieDetailsPage from './Components/moviedetailspage';
 function App() {
   /*return (
     <div className="App">
@@ -29,7 +28,7 @@ function App() {
   );*/
 
   return (
-    <MovieSchedule />
+    <MovieDetailsPage />
   );
 }
 

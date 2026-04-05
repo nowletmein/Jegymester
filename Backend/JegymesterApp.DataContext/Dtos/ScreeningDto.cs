@@ -20,4 +20,8 @@ namespace JegymesterApp.DataContext.Dtos
         public ICollection<TicketDto>? TicketDtos { get; set; } = new List<TicketDto>();
 
     }
+    public class ScreeningCreateDto
+    {
+
+    }
 }
