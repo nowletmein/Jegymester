@@ -5,6 +5,7 @@ using JegymesterApp.DataContext.Context;
 using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.DataContext.Entites;
 using JegymesterApp.Services;
+using JegymesterApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,27 +33,51 @@ namespace Jegymester.API.Controllers
         }
         // GET: api/TodoItems/5
         // <snippet_GetByID>
-        [HttpGet("{id}")]
+        [HttpGet]
+        [Route("{userId}")]
         public async Task<IActionResult> Get(int Id)
         {
-            var movie = await _movieService.Get(Id);
-            return Ok(movie);
+            try {
+                var movie = await _movieService.Get(Id);
+                return Ok(movie);
+            } catch (MovieNotFoundException ex) {
+                return NotFound(ex.Message); 
+            }
         }
         //TODO Movie adatok változtatása | Movie létrehozás | Movie törlés
         [HttpPost]
         public async Task<IActionResult> Create(MovieCreateDto movieCreateDto)
         {
-            throw new NotImplementedException();
+            try {
+                var result = await _movieService.Create(movieCreateDto);
+                return Ok(result);
+            } catch (MovieAlreadyExistsException ex) { 
+                return BadRequest(ex.Message);
+            }
+            
         }
         [HttpPost]
+        [Route("{userId}")]
         public async Task<IActionResult> Delete(int Id) 
         {
-            throw new NotImplementedException();
+            try {
+                var result = await _movieService.Delete(Id);
+                return Ok(result);
+            } catch (MovieNotFoundException ex) { 
+                return NotFound(ex.Message);
+            }
+            
         }
         [HttpPost]
+        [Route("{userId}")]
         public async Task<IActionResult> Edit(MovieCreateDto movieCreateDto, int Id)
         {
-            throw new NotImplementedException();
+            try {
+                var result = await _movieService.Edit(movieCreateDto, Id);
+                return Ok(result);
+            } catch ( MovieNotFoundException ex ) {
+                return NotFound(ex.Message);
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.DataContext.Entites;
 using JegymesterApp.Services.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace JegymesterApp.Services
 {
@@ -10,6 +11,7 @@ namespace JegymesterApp.Services
         Task<int> Create(TicketCreateDto ticketCreateDto, int? userId);
         Task<int> Verify(int ticketId);
         Task<TicketDto> Get(int ticketId);
+        Task<int> Delete(int ticketId);
     }
     public class TicketService : ITicketService
     {
@@ -47,6 +49,18 @@ namespace JegymesterApp.Services
             return ticket.Id;
         }
 
+        public async Task<int> Delete(int ticketId)
+        {
+            var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
+            if (ticket == null)
+            {
+                throw new TicketNotFoundException($"There is no ticket with this ID: {ticketId}");
+            }
+            _context.Tickets.Remove(ticket);
+            await _context.SaveChangesAsync();
+            return 0;
+        }
+
         public async Task<TicketDto> Get(int ticketId)
         {
             var ticket = _context.Tickets.FirstOrDefault(x => x.Id == ticketId);
@@ -77,7 +91,7 @@ namespace JegymesterApp.Services
             }
             
             ticket.isVerified = true;
-            
+            await _context.SaveChangesAsync();
             return ticket.Id;
         }
     }

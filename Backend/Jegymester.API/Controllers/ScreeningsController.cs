@@ -1,5 +1,6 @@
 ﻿using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.Services;
+using JegymesterApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -20,14 +21,22 @@ namespace Jegymester.API.Controllers
         [HttpGet]
          public async Task<IActionResult> GetWeekly()
          {
-             //return Ok(_screeningService.GetWeekly());
-             throw new NotImplementedException();
+             return Ok(_screeningService.GetWeekly());
+             
          }
         [HttpGet]
         [Route("{Id}")]
         public async Task<IActionResult> Get(int Id) 
-        {  
-            return Ok(_screeningService.Get(Id)); 
+        {
+            try
+            {
+                var result = Ok(_screeningService.Get(Id));
+                return Ok(result);
+            }
+            catch (ScreeningNotFoundException Scex) 
+            { 
+                return NotFound(Scex.Message);
+            }
         }
         public async Task<IActionResult> Delete(int Id)
         {

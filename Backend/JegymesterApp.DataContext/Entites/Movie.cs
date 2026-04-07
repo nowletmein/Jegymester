@@ -12,7 +12,7 @@ namespace JegymesterApp.DataContext.Entites
         public string Title { get; set; }
         public string? Description { get; set; }//opcionális: film leírása
         public string Director { get; set; }
-        public string? Rateing { get; set; } //opcionális: értékelés
+        public string? Rating { get; set; } //opcionális: értékelés
         public string PG {  get; set; } //korhatár besorolás
         public int Length { get; set; } //integer: film hossza percben
         public ICollection<Screening> Screenings { get; set; } = new List<Screening>();

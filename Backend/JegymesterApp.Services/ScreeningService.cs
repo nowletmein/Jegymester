@@ -1,6 +1,7 @@
 ﻿using JegymesterApp.DataContext.Context;
 using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.DataContext.Entites;
+using JegymesterApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -24,39 +25,42 @@ namespace JegymesterApp.Services
         }
         public async Task<ScreeningDto> Get(int Id)
         {
-            /*   public int Id { get; set; }
-        public int ScreeningId { get; set; }   
-        public int? UserId { get; set; }
-        public string? UserName { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
-        public DateTime PurchaseDate { get; set; }
-        public bool IsCancelled { get; set; }
-        public bool IsVerified { get; set; }*/
+                /*   public int Id { get; set; }
+            public int ScreeningId { get; set; }   
+            public int? UserId { get; set; }
+            public string? UserName { get; set; }
+            public string Phone { get; set; }
+            public string Email { get; set; }
+            public DateTime PurchaseDate { get; set; }
+            public bool IsCancelled { get; set; }
+            public bool IsVerified { get; set; }*/
             var screening = await _context.Screenings
-        .Where(x => x.Id == Id)
-        .Select(s => new ScreeningDto
-        {
-            Id = s.Id,
-            MovieId = s.MovieId,
-            ScreeningDate = s.ScreeningDate,
-            RoomId = s.RoomId,
-            // Mapping the nested Tickets to TicketDtos
-            TicketDtos = s.Tickets.Select(t => new TicketDto
+            .Where(x => x.Id == Id)
+            .Select(s => new ScreeningDto
             {
-                Id = t.Id,
-                ScreeningId = t.ScreeningId,
-                UserId = t.UserId,
-                UserName = t.User.Name,
-                Phone = t.Phone,
-                Email = t.Email,
-                PurchaseDate = t.PurchaseDate,
-                IsCancelled = t.IsCancelled,
-                IsVerified = t.isVerified
+                Id = s.Id,
+                MovieId = s.MovieId,
+                ScreeningDate = s.ScreeningDate,
+                RoomId = s.RoomId,
+                // Mapping the nested Tickets to TicketDtos
+                TicketDtos = s.Tickets.Select(t => new TicketDto
+                {
+                    Id = t.Id,
+                    ScreeningId = t.ScreeningId,
+                    UserId = t.UserId,
+                    UserName = t.User.Name,
+                    Phone = t.Phone,
+                    Email = t.Email,
+                    PurchaseDate = t.PurchaseDate,
+                    IsCancelled = t.IsCancelled,
+                    IsVerified = t.isVerified
 
-            }).ToList()
-        }).FirstOrDefaultAsync();
-           
+                }).ToList()
+            }).FirstOrDefaultAsync();
+            if(screening == null)
+            {
+                throw new ScreeningNotFoundException("Screening Not Found");
+            }
             return screening;
         }
 

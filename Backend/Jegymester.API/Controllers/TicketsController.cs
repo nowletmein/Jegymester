@@ -1,5 +1,6 @@
 ﻿using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.Services;
+using JegymesterApp.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -28,19 +29,43 @@ namespace Jegymester.API.Controllers
         [Route("{ticketId}")]
         public async Task<IActionResult> VerifyTicket(int ticketId)
         {
-            var result = await _ticketService.Verify(ticketId);
-            return Ok(result);
+            try
+            {
+                var result = await _ticketService.Verify(ticketId);
+                return Ok(result);
+            } 
+            catch (TicketNotFoundException Tex)
+            {
+                return NotFound(Tex.Message);
+            }
+
         }
         [HttpGet]
         [Route("{ticketId}")]
         public async Task<IActionResult> Get(int ticketId) {
-            var result = await _ticketService.Get(ticketId);
-            return Ok(result);
+            try
+            {
+                var result = await _ticketService.Get(ticketId);
+                return Ok(result);
+            }
+            catch (TicketNotFoundException Tex)
+            {
+                return NotFound(Tex.Message);
+            }
+           
         }
         [HttpPost]
         public async Task<IActionResult> Delete(int ticketId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var result = await _ticketService.Delete(ticketId);
+                return Ok(result);
+            }
+            catch (TicketNotFoundException Tex) {
+                return NotFound(Tex.Message);
+            }
+            
         }
     }
 }
