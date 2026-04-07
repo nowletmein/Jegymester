@@ -8,43 +8,26 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace JegymesterApp.Services
-{
-    public interface IScreeningService
-    {
+namespace JegymesterApp.Services {
+    public interface IScreeningService {
         Task<List<WeeklyScheduleDto>> GetWeekly();
         Task<ScreeningDto> Get(int Id);
+        Task<int> Create(ScreeningCreateDto screeningCreateDto);
     }
-    public class ScreeningService : IScreeningService
-    {
+    public class ScreeningService : IScreeningService {
         private readonly JegymesterDbContext _context;
 
-        public ScreeningService(JegymesterDbContext context)
-        {
+        public ScreeningService(JegymesterDbContext context) {
             _context = context;
         }
-        public async Task<ScreeningDto> Get(int Id)
-        {
-                /*   public int Id { get; set; }
-            public int ScreeningId { get; set; }   
-            public int? UserId { get; set; }
-            public string? UserName { get; set; }
-            public string Phone { get; set; }
-            public string Email { get; set; }
-            public DateTime PurchaseDate { get; set; }
-            public bool IsCancelled { get; set; }
-            public bool IsVerified { get; set; }*/
-            var screening = await _context.Screenings
-            .Where(x => x.Id == Id)
-            .Select(s => new ScreeningDto
-            {
-                Id = s.Id,
-                MovieId = s.MovieId,
-                ScreeningDate = s.ScreeningDate,
-                RoomId = s.RoomId,
+        public ScreeningDto MapToScreeningDto(Screening screening) {
+            var screeningDto = new ScreeningDto() {
+                Id = screening.Id,
+                MovieId = screening.MovieId,
+                ScreeningDate = screening.ScreeningDate,
+                RoomId = screening.RoomId,
                 // Mapping the nested Tickets to TicketDtos
-                TicketDtos = s.Tickets.Select(t => new TicketDto
-                {
+                TicketDtos = screening.Tickets.Select(t => new TicketDto {
                     Id = t.Id,
                     ScreeningId = t.ScreeningId,
                     UserId = t.UserId,
@@ -56,7 +39,31 @@ namespace JegymesterApp.Services
                     IsVerified = t.isVerified
 
                 }).ToList()
-            }).FirstOrDefaultAsync();
+            };
+            return screeningDto;
+        }
+        public Screening MapToScreening(ScreeningCreateDto screeningCreateDto) {
+            var screening = new Screening() {
+                MovieId = screeningCreateDto.MovieId,
+                RoomId = screeningCreateDto.RoomId,
+                ScreeningDate = screeningCreateDto.ScreeningDate
+            };
+            return screening;
+        }
+
+        public async Task<ScreeningDto> Get(int Id) {
+                /*   public int Id { get; set; }
+            public int ScreeningId { get; set; }   
+            public int? UserId { get; set; }
+            public string? UserName { get; set; }
+            public string Phone { get; set; }
+            public string Email { get; set; }
+            public DateTime PurchaseDate { get; set; }
+            public bool IsCancelled { get; set; }
+            public bool IsVerified { get; set; }*/
+            var screening = await _context.Screenings
+            .Where(x => x.Id == Id)
+            .Select(s => MapToScreeningDto(s)).FirstOrDefaultAsync();
             if(screening == null)
             {
                 throw new ScreeningNotFoundException("Screening Not Found");
@@ -64,8 +71,7 @@ namespace JegymesterApp.Services
             return screening;
         }
 
-        public async Task<List<WeeklyScheduleDto>> GetWeekly()
-        {
+        public async Task<List<WeeklyScheduleDto>> GetWeekly() {
             var today = DateTime.Today;
 
             // Get Monday of the current week
@@ -79,21 +85,32 @@ namespace JegymesterApp.Services
             .Include(s => s.Tickets) 
             .ToListAsync();
 
+           
             return screenings
             .GroupBy(s => s.ScreeningDate.DayOfWeek)
-            .OrderBy(g => (int)g.Key == 0 ? 7 : (int)g.Key) // Custom sort so Monday is first, Sunday last
-            .Select(g => new WeeklyScheduleDto
-            {
+            // Sunday is 0 in C#, the end (7) to keep Monday (1) first
+            .OrderBy(g => g.Key == DayOfWeek.Sunday ? 7 : (int) g.Key)
+            .Select(g => new WeeklyScheduleDto {
                 Day = g.Key.ToString(),
-                Screenings = g.Select(s => new ScreeningDto
-                {
-                    Id = s.Id,
-                    MovieId = s.MovieId,
-                    ScreeningDate = s.ScreeningDate,
-                    RoomId = s.RoomId
-                }).ToList()
+                Screenings = g.Select(s => MapToScreeningDto(s)).ToList()
             })
             .ToList();
+            
+
+        }
+
+        public async Task<int> Create(ScreeningCreateDto screeningCreateDto) {
+            
+            var screening = MapToScreening(screeningCreateDto);
+            
+            if(_context.Screenings.Any(x => x.ScreeningDate == screeningCreateDto.ScreeningDate && x.MovieId == screeningCreateDto.MovieId && x.RoomId == screeningCreateDto.RoomId) ) {
+                throw new ScreeningAlreadyExists("Egy Vetítés ezzel az időpontal filmel és szoba Id val már létezik");
+            }
+
+            await _context.Screenings.AddAsync(screening);
+            await _context.SaveChangesAsync();
+            
+            return screening.Id;
         }
     }
 }
