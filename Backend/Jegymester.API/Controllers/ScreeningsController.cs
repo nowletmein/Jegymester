@@ -46,9 +46,17 @@ namespace Jegymester.API.Controllers
         {
             throw new NotImplementedException();
         }
-        public async Task<IActionResult> Create(ScreeningCreateDto screeningCreateDto)
-        {
-            throw new NotImplementedException();
-        }
+
+
+
+         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
+  	{
+   	    try {
+           	var result = _screeningService.Create(screeningCreateDto);
+           	return Ok(result);
+       		} catch(ScreeningAlreadyExists ex ) {
+           	return BadRequest(ex.Message);
+       		}
+   	}
     }
 }
