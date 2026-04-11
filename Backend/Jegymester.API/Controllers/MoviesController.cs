@@ -71,5 +71,10 @@ namespace Jegymester.API.Controllers {
                 return NotFound(ex.Message);
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> AddTestData() {
+            var result = _movieService.AddTestData();
+            return Ok(result);
+        }
     }
 }

@@ -74,5 +74,10 @@ namespace Jegymester.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> AddTestData() {
+            var result = _screeningService.AddTestData();
+            return Ok(result);
+        }
     }
 }
