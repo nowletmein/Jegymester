@@ -1,5 +1,9 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 namespace JegymesterApp.Services.Exceptions {
+=======
+﻿namespace JegymesterApp.Services.Exceptions {
+>>>>>>> Stashed changes
 =======
 ﻿namespace JegymesterApp.Services.Exceptions {
 >>>>>>> Stashed changes
@@ -15,7 +19,11 @@ namespace JegymesterApp.Services.Exceptions {
         }
     }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 } 
+=======
+}
+>>>>>>> Stashed changes
 =======
 }
 >>>>>>> Stashed changes
