@@ -30,10 +30,10 @@ namespace Jegymester.API.Controllers {
         // GET: api/TodoItems/5
         // <snippet_GetByID>
         [HttpGet]
-        [Route("{userId}")]
-        public async Task<IActionResult> Get(int Id) {
+        [Route("{movieId}")]
+        public async Task<IActionResult> Get(int movieId) {
             try {
-                var movie = await _movieService.Get(Id);
+                var movie = await _movieService.Get(movieId);
                 return Ok(movie);
             } catch (MovieNotFoundException ex) {
                 return NotFound(ex.Message); 
@@ -51,10 +51,10 @@ namespace Jegymester.API.Controllers {
             
         }
         [HttpPost]
-        [Route("{userId}")]
-        public async Task<IActionResult> Delete(int Id) {
+        [Route("{movieId}")]
+        public async Task<IActionResult> Delete(int movieId) {
             try {
-                var result = await _movieService.Delete(Id);
+                var result = await _movieService.Delete(movieId);
                 return Ok(result);
             } catch (MovieNotFoundException ex) { 
                 return NotFound(ex.Message);
@@ -62,10 +62,10 @@ namespace Jegymester.API.Controllers {
             
         }
         [HttpPost]
-        [Route("{userId}")]
-        public async Task<IActionResult> Edit([FromBody] MovieCreateDto movieCreateDto, int Id) {
+        [Route("{movieId}")]
+        public async Task<IActionResult> Edit([FromBody] MovieCreateDto movieCreateDto, int movieId) {
             try {
-                var result = await _movieService.Edit(movieCreateDto, Id);
+                var result = await _movieService.Edit(movieCreateDto, movieId);
                 return Ok(result);
             } catch ( MovieNotFoundException ex ) {
                 return NotFound(ex.Message);
@@ -73,7 +73,7 @@ namespace Jegymester.API.Controllers {
         }
         [HttpPost]
         public async Task<IActionResult> AddTestData() {
-            var result = _movieService.AddTestData();
+            var result = await _movieService.AddTestData();
             return Ok(result);
         }
     }

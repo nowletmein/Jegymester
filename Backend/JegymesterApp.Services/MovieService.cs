@@ -163,23 +163,26 @@ namespace JegymesterApp.Services {
 
         public async Task<MovieDto> Get(int Id) {
 
-             var movie = await _context.Movies.Include(m => m.Screenings).Where(x => x.Id == Id)
-             .Select(movie => MapToDto(movie)).FirstOrDefaultAsync();
-            
-             if (movie == null) {
+            var movie = await _context.Movies
+               .Include(m => m.Screenings)
+               .ThenInclude(s => s.Room)
+               .FirstOrDefaultAsync(x => x.Id == Id);
+
+            if (movie == null) {
                  throw new MovieNotFoundException("Movie Not Found");
              }
 
-             return movie;
+             return MapToDto(movie);
         }
 
         public async Task<List<MovieDto>> GetAll() {
 
-             return await _context.Movies
-             .Include(m => m.Screenings).ThenInclude(s => s.Room) 
-             .Select(movie => MapToDto(movie))
-             .ToListAsync();
+            var movies = await _context.Movies
+            .Include(m => m.Screenings)
+                .ThenInclude(s => s.Room)
+            .ToListAsync();
 
+            return movies.Select(movie => MapToDto(movie)).ToList();
         }
 
         public async Task<MovieDto> Edit(MovieCreateDto movieCreateDto, int Id)
@@ -206,7 +209,7 @@ namespace JegymesterApp.Services {
                     // This switch handles nulls, empty strings/whitespace, and default values (like 0)
                   bool skipUpdate = newValue switch {
                         null => true,
-                        string s when string.IsNullOrWhiteSpace(s) => true,
+                        string s when string.IsNullOrWhiteSpace(s) || s == "string" => true,
                         var val when val.Equals(GetDefault(prop.PropertyType)) => true,
                         _ => false
                   };

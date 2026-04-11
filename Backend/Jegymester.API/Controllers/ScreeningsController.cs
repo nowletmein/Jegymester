@@ -76,7 +76,7 @@ namespace Jegymester.API.Controllers
         }
         [HttpPost]
         public async Task<IActionResult> AddTestData() {
-            var result = _screeningService.AddTestData();
+            var result = await _screeningService.AddTestData();
             return Ok(result);
         }
     }
