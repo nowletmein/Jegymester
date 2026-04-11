@@ -13,9 +13,18 @@ namespace JegymesterApp.Services {
         Task<List<WeeklyScheduleDto>> GetWeekly();
         Task<ScreeningDto> Get(int Id);
         Task<int> Create(ScreeningCreateDto screeningCreateDto);
+        Task<int> Delete(int Id);
+        Task<ScreeningDto> Edit(int Id, ScreeningCreateDto screeningCreateDto);
+        Task<int> AddTestData();
     }
     public class ScreeningService : IScreeningService {
         private readonly JegymesterDbContext _context;
+        public object? GetDefault(Type type) {
+            if ( type.IsValueType ) {
+                return Activator.CreateInstance(type);
+            }
+            return null;
+        }
 
         public ScreeningService(JegymesterDbContext context) {
             _context = context;
@@ -36,7 +45,7 @@ namespace JegymesterApp.Services {
                     Email = t.Email,
                     PurchaseDate = t.PurchaseDate,
                     IsCancelled = t.IsCancelled,
-                    IsVerified = t.isVerified
+                    IsVerified = t.IsVerified
 
                 }).ToList()
             };
@@ -47,20 +56,37 @@ namespace JegymesterApp.Services {
                 MovieId = screeningCreateDto.MovieId,
                 RoomId = screeningCreateDto.RoomId,
                 ScreeningDate = screeningCreateDto.ScreeningDate
+                
             };
             return screening;
         }
+        public Screening MapToScreening(ScreeningDto screeningDto) {
+            
+            if ( screeningDto == null ) return null;
+
+            return new Screening() {
+                Id = screeningDto.Id,
+                MovieId = screeningDto.MovieId,
+                RoomId = screeningDto.RoomId,
+                ScreeningDate = screeningDto.ScreeningDate,
+                
+                Tickets = screeningDto.TicketDtos?.Select(t => new Ticket() {
+                    Id = t.Id,
+                    Email = t.Email,
+                    IsCancelled = t.IsCancelled,
+                    IsVerified = t.IsVerified, 
+                    Phone = t.Phone,
+                    PurchaseDate = t.PurchaseDate,
+                    ScreeningId = t.ScreeningId,
+                    UserId = t.UserId
+                }).ToList() ?? new List<Ticket>()
+            };
+
+
+        }
 
         public async Task<ScreeningDto> Get(int Id) {
-                /*   public int Id { get; set; }
-            public int ScreeningId { get; set; }   
-            public int? UserId { get; set; }
-            public string? UserName { get; set; }
-            public string Phone { get; set; }
-            public string Email { get; set; }
-            public DateTime PurchaseDate { get; set; }
-            public bool IsCancelled { get; set; }
-            public bool IsVerified { get; set; }*/
+              
             var screening = await _context.Screenings
             .Where(x => x.Id == Id)
             .Select(s => MapToScreeningDto(s)).FirstOrDefaultAsync();
@@ -104,13 +130,93 @@ namespace JegymesterApp.Services {
             var screening = MapToScreening(screeningCreateDto);
             
             if(_context.Screenings.Any(x => x.ScreeningDate == screeningCreateDto.ScreeningDate && x.MovieId == screeningCreateDto.MovieId && x.RoomId == screeningCreateDto.RoomId) ) {
-                throw new ScreeningAlreadyExists("Egy Vetítés ezzel az időpontal filmel és szoba Id val már létezik");
+                throw new ScreeningAlreadyExists("Screening already Exists with this date, Movie and roomId");
             }
 
             await _context.Screenings.AddAsync(screening);
             await _context.SaveChangesAsync();
             
             return screening.Id;
+        }
+
+        public async Task<int> Delete(int Id) {
+            var screening = await _context.Screenings.FirstOrDefaultAsync(x => x.Id == Id);
+            if ( screening == null ) throw new ScreeningNotFoundException($"Screening Not Found with {Id}");
+            
+            _context.Screenings.Remove(screening);
+            await _context.SaveChangesAsync();
+            return 0;
+        }
+
+        public async Task<ScreeningDto> Edit(int Id, ScreeningCreateDto screeningCreateDto) {
+
+            
+            var screening = await _context.Screenings.FirstOrDefaultAsync(x => x.Id == Id);
+
+            if ( screening == null ) {
+               
+                throw new ScreeningNotFoundException("Screening not found");
+            }
+
+            
+            var properties = typeof(ScreeningCreateDto).GetProperties();
+
+            foreach ( var prop in properties ) {
+                var newValue = prop.GetValue(screeningCreateDto);
+
+                
+                bool skipUpdate = newValue switch {
+                    null => true,
+                    string s when string.IsNullOrWhiteSpace(s) => true,
+                    
+                    var val when val.Equals(GetDefault(prop.PropertyType)) => true,
+                    _ => false
+                };
+
+                if ( !skipUpdate ) {
+                    var targetProperty = screening.GetType().GetProperty(prop.Name);
+
+                    if ( targetProperty != null && targetProperty.CanWrite ) {
+                        targetProperty.SetValue(screening, newValue);
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return MapToScreeningDto(screening);
+        }
+
+        public async Task<int> AddTestData() {
+            var movies = await _context.Movies.ToListAsync();
+            if ( !movies.Any() ) return 0;
+            var rooms = await _context.Rooms.ToListAsync();
+            // 1. Ensure we have at least 5 Rooms to assign to screenings
+            if ( rooms.Count < 5) {
+                for ( int i = 1; i <= 5; i++ ) {
+                    _context.Rooms.Add(new Room { Name = $"Hall {i}", Capacity = 100, Available=true });
+                }
+                await _context.SaveChangesAsync();
+            }
+
+            
+            var screenings = new List<Screening>();
+
+            // 2. Generate 5 screenings per movie across the week
+            foreach ( var movie in movies ) {
+                var movieIndex = movies.IndexOf(movie);
+
+                for ( int day = 0; day < 5; day++ ) {
+                    screenings.Add(new Screening {
+                        MovieId = movie.Id,
+                        RoomId = rooms[movieIndex % rooms.Count].Id, 
+                        ScreeningDate = DateTime.Today.AddDays(day).AddHours(14 + movieIndex),
+                        
+                    });
+                }
+            }
+
+            _context.Screenings.AddRange(screenings);
+            return await _context.SaveChangesAsync();
         }
     }
 }

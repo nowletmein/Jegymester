@@ -21,9 +21,9 @@ namespace Jegymester.API.Controllers
         [HttpGet]
          public async Task<IActionResult> GetWeekly()
          {
-             return Ok(_screeningService.GetWeekly());
-             
+             return Ok(_screeningService.GetWeekly()); 
          }
+        
         [HttpGet]
         [Route("{Id}")]
         public async Task<IActionResult> Get(int Id) 
@@ -38,17 +38,41 @@ namespace Jegymester.API.Controllers
                 return NotFound(Scex.Message);
             }
         }
+
+        [HttpPost]
+        [Route("{Id}")]
         public async Task<IActionResult> Delete(int Id)
         {
-            throw new NotImplementedException();
+            try {
+                var result = _screeningService.Delete(Id);
+                return Ok(result);
+            } catch ( ScreeningNotFoundException Scex ) {
+                return NotFound(Scex.Message);
+            }
+            
         }
-        public async Task<IActionResult> Edit(int Id)
+
+        [HttpPost]
+        [Route("{Id}")]
+        public async Task<IActionResult> Edit(int Id, [FromBody] ScreeningCreateDto screeningCreateDto)
         {
-            throw new NotImplementedException();
+            try {
+                var result = await _screeningService.Edit(Id, screeningCreateDto);
+                return Ok(result);
+            } catch ( ScreeningNotFoundException Scex ) {
+                return NotFound(Scex);
+            }
         }
-        public async Task<IActionResult> Create(ScreeningCreateDto screeningCreateDto)
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
         {
-            throw new NotImplementedException();
+            try {
+                var result = _screeningService.Create(screeningCreateDto);
+                return Ok(result);
+            } catch(ScreeningAlreadyExists ex ) {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
