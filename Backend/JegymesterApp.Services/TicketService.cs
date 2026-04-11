@@ -21,6 +21,42 @@ namespace JegymesterApp.Services
         {
             _context = context;
         }
+        public TicketDto MapToTickeDto(Ticket ticket) {
+            var ticketDto = new TicketDto() {
+                Id = ticket.Id,
+                Email = ticket.Email,
+                IsCancelled = ticket.IsCancelled,
+                IsVerified = ticket.IsVerified,
+                Phone = ticket.Phone,
+                PurchaseDate = ticket.PurchaseDate,
+                ScreeningId = ticket.ScreeningId,
+                UserId = ticket.UserId,
+                UserName = ticket.User?.Name
+            };
+            return ticketDto;
+        }
+        public Ticket MapToTicket(TicketDto ticketDto) {
+            var ticket = new Ticket() {
+                Id = ticketDto.Id,
+                Email = ticketDto.Email,
+                IsCancelled =ticketDto.IsCancelled,
+                IsVerified=ticketDto.IsVerified,
+                Phone=ticketDto.Phone,
+                PurchaseDate=ticketDto.PurchaseDate,
+                ScreeningId=ticketDto.ScreeningId,
+                UserId=ticketDto.UserId
+            };
+            return ticket;
+        }
+        /*public Ticket MapToTicket(TicketCreateDto ticketCreateDto) {
+            var ticket = new Ticket() {
+                ScreeningId = ticketCreateDto.ScreeningId,
+                UserId = userId,
+                Phone = ticketCreateDto.Phone,
+                Email = ticketCreateDto.Email,
+                PurchaseDate = DateTime.Now,
+            };
+        }*/
         public async Task<int> Create(TicketCreateDto ticketCreateDto, int? userId)
         {
             var ticket = new Ticket
@@ -30,6 +66,7 @@ namespace JegymesterApp.Services
                 Phone = ticketCreateDto.Phone,
                 Email = ticketCreateDto.Email,
                 PurchaseDate = DateTime.Now,
+                
 
             };
             await _context.Tickets.AddAsync(ticket);
@@ -72,13 +109,7 @@ namespace JegymesterApp.Services
                 public string? CreatorName { get; set; }
                 public string Phone { get; set; }
                 public string Email { get; set; }*/
-            return new TicketDto
-            {
-                ScreeningId = ticket.ScreeningId,
-                UserId = ticket.UserId,
-                Phone = ticket.Phone,
-                Email = ticket.Email,
-            };
+            return MapToTickeDto(ticket);
             
         }
 
@@ -90,7 +121,7 @@ namespace JegymesterApp.Services
                 throw new TicketNotFoundException($"There is no ticket with this ID: {ticketId}");
             }
             
-            ticket.isVerified = true;
+            ticket.IsVerified = true;
             await _context.SaveChangesAsync();
             return ticket.Id;
         }

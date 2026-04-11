@@ -8,7 +8,8 @@ namespace JegymesterApp.DataContext.Entites
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public bool available { get; set; }
+        public bool Available { get; set; }
+        public int Capacity { get; set; }
         public ICollection<Screening> Screenings { get; set; } = new List<Screening>();
 
     }

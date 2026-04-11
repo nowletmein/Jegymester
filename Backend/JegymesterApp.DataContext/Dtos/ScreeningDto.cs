@@ -22,6 +22,8 @@ namespace JegymesterApp.DataContext.Dtos
     }
     public class ScreeningCreateDto
     {
-
+        public int MovieId { get; set; }
+        public DateTime ScreeningDate { get; set; }
+        public int RoomId { get; set; }
     }
 }
