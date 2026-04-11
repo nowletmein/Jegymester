@@ -1,10 +1,15 @@
 
+
 namespace JegymesterApp.Services.Exceptions {
 
 ﻿namespace JegymesterApp.Services.Exceptions {
 
 
 ﻿namespace JegymesterApp.Services.Exceptions {
+
+
+﻿namespace JegymesterApp.Services.Exceptions {
+    [Serializable]
 
     public class ScreeningAlreadyExists : Exception {
         public ScreeningAlreadyExists() {
@@ -17,9 +22,13 @@ namespace JegymesterApp.Services.Exceptions {
         }
     }
 
+
 } 
 
 }
+
+}
+
 
 }
 
