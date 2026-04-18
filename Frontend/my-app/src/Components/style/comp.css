@@ -1,6 +1,7 @@
 :root {
             --cc-blue: #0080ff;
             --cc-black: #000000;
+            --cc-card: #111111;
         }
 
         body { font-family: sans-serif; 
@@ -63,7 +64,7 @@
         .form-control {
             background-color: white;
             border: 1px solid #333;
-            color: white;
+            color: #000;
             padding: 12px;
         }
 
