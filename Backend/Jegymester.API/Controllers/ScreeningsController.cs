@@ -21,9 +21,9 @@ namespace Jegymester.API.Controllers
         [HttpGet]
          public async Task<IActionResult> GetWeekly()
          {
-             return Ok(_screeningService.GetWeekly());
-             
+             return Ok(_screeningService.GetWeekly()); 
          }
+        
         [HttpGet]
         [Route("{Id}")]
         public async Task<IActionResult> Get(int Id) 
@@ -38,15 +38,33 @@ namespace Jegymester.API.Controllers
                 return NotFound(Scex.Message);
             }
         }
+
+        [HttpPost]
+        [Route("{Id}")]
         public async Task<IActionResult> Delete(int Id)
         {
-            throw new NotImplementedException();
-        }
-        public async Task<IActionResult> Edit(int Id)
-        {
-            throw new NotImplementedException();
+            try {
+                var result = _screeningService.Delete(Id);
+                return Ok(result);
+            } catch ( ScreeningNotFoundException Scex ) {
+                return NotFound(Scex.Message);
+            }
+            
         }
 
+        [HttpPost]
+        [Route("{Id}")]
+        public async Task<IActionResult> Edit(int Id, [FromBody] ScreeningCreateDto screeningCreateDto)
+        {
+            try {
+                var result = await _screeningService.Edit(Id, screeningCreateDto);
+                return Ok(result);
+            } catch ( ScreeningNotFoundException Scex ) {
+                return NotFound(Scex);
+            }
+        }
+
+<<<<<<< HEAD
 
 
          public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
@@ -58,5 +76,22 @@ namespace Jegymester.API.Controllers
            	return BadRequest(ex.Message);
        		}
    	}
+=======
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
+        {
+            try {
+                var result = _screeningService.Create(screeningCreateDto);
+                return Ok(result);
+            } catch(ScreeningAlreadyExists ex ) {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddTestData() {
+            var result = await _screeningService.AddTestData();
+            return Ok(result);
+        }
+>>>>>>> 931aadb3e5c3c97bb54508b8471e4b82e584d72e
     }
 }

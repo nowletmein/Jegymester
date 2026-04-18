@@ -5,8 +5,14 @@ import RegisterPage from './Components/register';
 import Header from './Components/header';
 import Footer from './Components/footer';
 import Login from './Components/login';
-import MovieSchedule from './Components/movies';
+import Movies from './Components/movies';
 import MovieDetailsPage from './Components/moviedetailspage';
+import Admin from './Components/adminpage';
+import Cashier from './Components/cashier';
+import Profile from './Components/profile';
+import Purchase from './Components/purchase';
+
+
 function App() {
   /*return (
     <div className="App">
@@ -28,7 +34,7 @@ function App() {
   );*/
 
   return (
-    <MovieDetailsPage />
+    <Purchase/>
   );
 }
 

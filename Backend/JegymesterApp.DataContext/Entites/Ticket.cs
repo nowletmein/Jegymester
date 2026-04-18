@@ -18,7 +18,7 @@ namespace JegymesterApp.DataContext.Entites
         public string Email { get; set; }
         public DateTime PurchaseDate { get; set; }
         public bool IsCancelled { get; set; } = false;
-        public bool isVerified { get; set; } = false; 
+        public bool IsVerified { get; set; } = false; 
 
     }
 }

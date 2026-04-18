@@ -1,5 +1,7 @@
-namespace JegymesterApp.Services.Exceptions {
-    [Serializable]
+
+﻿namespace JegymesterApp.Services.Exceptions {
+    
+
     public class ScreeningAlreadyExists : Exception {
         public ScreeningAlreadyExists() {
         }
@@ -10,4 +12,7 @@ namespace JegymesterApp.Services.Exceptions {
         public ScreeningAlreadyExists(string? message, Exception? innerException) : base(message, innerException) {
         }
     }
+
+
+
 } 
