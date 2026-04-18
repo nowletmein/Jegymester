@@ -18,10 +18,9 @@ namespace Jegymester.API.Controllers
         }
 
         [HttpPost]
-        [Route("{userId}")]
-        public async Task<IActionResult> Create(int? userId, [FromBody] TicketCreateDto ticketCreateDto)
+        public async Task<IActionResult> Create([FromBody] TicketCreateDto ticketCreateDto)
         {
-            var result = await _ticketService.Create(ticketCreateDto,userId);
+            var result = await _ticketService.Create(ticketCreateDto);
             return Ok(result);
         }
 

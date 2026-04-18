@@ -8,7 +8,7 @@ namespace JegymesterApp.Services
 {
     public interface ITicketService
     {
-        Task<int> Create(TicketCreateDto ticketCreateDto, int? userId);
+        Task<int> Create(TicketCreateDto ticketCreateDto);
         Task<int> Verify(int ticketId);
         Task<TicketDto> Get(int ticketId);
         Task<int> Delete(int ticketId);
@@ -57,12 +57,12 @@ namespace JegymesterApp.Services
                 PurchaseDate = DateTime.Now,
             };
         }*/
-        public async Task<int> Create(TicketCreateDto ticketCreateDto, int? userId)
+        public async Task<int> Create(TicketCreateDto ticketCreateDto)
         {
             var ticket = new Ticket
             {
                 ScreeningId = ticketCreateDto.ScreeningId,
-                UserId = userId,
+                UserId = ticketCreateDto.UserId > 0 ? ticketCreateDto.UserId : null,
                 Phone = ticketCreateDto.Phone,
                 Email = ticketCreateDto.Email,
                 PurchaseDate = DateTime.Now,

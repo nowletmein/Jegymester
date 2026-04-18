@@ -21,7 +21,7 @@ namespace Jegymester.API.Controllers
         [HttpGet]
          public async Task<IActionResult> GetWeekly()
          {
-             return Ok(_screeningService.GetWeekly()); 
+             return Ok(await _screeningService.GetWeekly()); 
          }
         
         [HttpGet]
@@ -30,7 +30,7 @@ namespace Jegymester.API.Controllers
         {
             try
             {
-                var result = Ok(_screeningService.Get(Id));
+                var result = await _screeningService.Get(Id);
                 return Ok(result);
             }
             catch (ScreeningNotFoundException Scex) 
@@ -44,7 +44,7 @@ namespace Jegymester.API.Controllers
         public async Task<IActionResult> Delete(int Id)
         {
             try {
-                var result = _screeningService.Delete(Id);
+                var result = await _screeningService.Delete(Id);
                 return Ok(result);
             } catch ( ScreeningNotFoundException Scex ) {
                 return NotFound(Scex.Message);
@@ -68,7 +68,7 @@ namespace Jegymester.API.Controllers
         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
         {
             try {
-                var result = _screeningService.Create(screeningCreateDto);
+                var result = await _screeningService.Create(screeningCreateDto);
                 return Ok(result);
             } catch(ScreeningAlreadyExists ex ) {
                 return BadRequest(ex.Message);
