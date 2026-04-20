@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Components/style/comp.css';
 
 const Header = () => {
+  const [isLoggedIn, setIsLoggedIn] = require('react').useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token'); 
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   return (
     <header>
       <div className="top-nav">
@@ -18,13 +27,25 @@ const Header = () => {
               <a href="#" className="nav-link">
                 <i className="fas fa-map-marker-alt me-2"></i> Mozi kiválasztása
               </a>
+
               <div className="d-flex align-items-center">
-                <a href="/login" className="nav-link me-2">
-                  <i className="fas fa-user me-2"></i> Belépés
-                </a>
-                <span className="text-secondary">|</span>
-                <a href="/register" className="nav-link ms-2">Regisztráció</a>
+                {isLoggedIn ? (
+                  /* Ha be van jelentkezve: */
+                  <a href="/profile" className="nav-link">
+                    <i className="fas fa-user-circle me-2"></i> Fiókom
+                  </a>
+                ) : (
+                  /* Ha nincs bejelentkezve: */
+                  <>
+                    <a href="/login" className="nav-link me-2">
+                      <i className="fas fa-user me-2"></i> Belépés
+                    </a>
+                    <span className="text-secondary">|</span>
+                    <a href="/register" className="nav-link ms-2">Regisztráció</a>
+                  </>
+                )}
               </div>
+
               <div className="input-group w-25">
                 <input type="text" className="form-control search-box" placeholder="Keresés..." />
                 <span className="input-group-text search-box">
