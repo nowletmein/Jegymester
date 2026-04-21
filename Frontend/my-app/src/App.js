@@ -1,4 +1,4 @@
-import logo from './logo.svg';
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import MainPage from './Components/mainpage';
 import RegisterPage from './Components/register';
@@ -12,29 +12,25 @@ import Cashier from './Components/cashier';
 import Profile from './Components/profile';
 import Purchase from './Components/purchase';
 
-
 function App() {
-  /*return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );*/
-
   return (
-    <Purchase/>
+    <div className="App">
+      
+      <main>
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/movies" element={<Movies />} />
+          <Route path="/movie/:id" element={<MovieDetailsPage />} />
+          <Route path="/purchase" element={<Purchase />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/cashier" element={<Cashier />} />
+        </Routes>
+      </main>
+
+    </div>
   );
 }
 

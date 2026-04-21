@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import '../Components/style/comp.css';
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = require('react').useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token'); 
@@ -17,31 +18,30 @@ const Header = () => {
         <div className="container-fluid px-5">
           <div className="row align-items-center">
             <div className="col-md-4">
-              <a href="/">
-                <div className="brand-logo mb-3" style={{ textAlign: 'left', fontSize: '1.5rem' }}>
+              <Link to="/">
+                <div className="brand-logo mb-3" style={{ textAlign: 'left', fontSize: '1.5rem', textDecoration: 'none' }}>
                   JEGY<span className="text-white">MESTER</span>
                 </div>
-              </a>
+              </Link>
             </div>
+            
             <div className="col-md-8 d-flex justify-content-end align-items-center gap-4">
-              <a href="#" className="nav-link">
+              <Link to="/movies" className="nav-link">
                 <i className="fas fa-map-marker-alt me-2"></i> Mozi kiválasztása
-              </a>
+              </Link>
 
               <div className="d-flex align-items-center">
                 {isLoggedIn ? (
-                  /* Ha be van jelentkezve: */
-                  <a href="/profile" className="nav-link">
+                  <Link to="/profile" className="nav-link">
                     <i className="fas fa-user-circle me-2"></i> Fiókom
-                  </a>
+                  </Link>
                 ) : (
-                  /* Ha nincs bejelentkezve: */
                   <>
-                    <a href="/login" className="nav-link me-2">
+                    <Link to="/login" className="nav-link me-2">
                       <i className="fas fa-user me-2"></i> Belépés
-                    </a>
+                    </Link>
                     <span className="text-secondary">|</span>
-                    <a href="/register" className="nav-link ms-2">Regisztráció</a>
+                    <Link to="/register" className="nav-link ms-2">Regisztráció</Link>
                   </>
                 )}
               </div>
@@ -60,8 +60,8 @@ const Header = () => {
       <nav className="navbar navbar-expand-lg main-nav">
         <div className="container-fluid px-5">
           <div className="navbar-nav w-100 justify-content-center">
-            <a className="nav-link" href="#">Műsoron</a>
-            <a className="nav-link" href="#">Ajánlatok</a>
+            <Link className="nav-link" to="/movies">Műsoron</Link>
+            <Link className="nav-link" to="/purchase">Ajánlatok</Link>
           </div>
         </div>
       </nav>
