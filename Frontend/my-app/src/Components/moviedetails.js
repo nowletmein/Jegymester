@@ -20,6 +20,7 @@ const MovieDetails = () => {
         const data = await response.json();
         setMovie(mapBackendDataToFrontend(data));
       } catch (err) {
+        console.error("Hiba a lekéréskor:", err);
         setError(true);
       } finally {
         setLoading(false);
@@ -31,11 +32,13 @@ const MovieDetails = () => {
 
   const mapBackendDataToFrontend = (data) => {
     const showtimesMap = new Map();
-    if (data.screenings && Array.isArray(data.screenings)) {
-      data.screenings.forEach(screening => {
+    
+    if (data.screeningDtos && Array.isArray(data.screeningDtos)) {
+      data.screeningDtos.forEach(screening => {
         const dateObj = new Date(screening.screeningDate);
         const dateKey = dateObj.toISOString().split('T')[0];
         
+        // Napok inicializálása
         if (!showtimesMap.has(dateKey)) {
           const days = ['Vasárnap', 'Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat'];
           showtimesMap.set(dateKey, {
@@ -45,11 +48,15 @@ const MovieDetails = () => {
           });
         }
         
+        // Időpont formázása ("14:30")
+        const timeStr = dateObj.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' });
+         
+        // Mivel a backend egyelőre nem küld típus/nyelv adatot a DTO-ban, alapértelmezett értéket adunk neki
         showtimesMap.get(dateKey).sessions.push({
           id: screening.id,
-          time: dateObj.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }),
-          type: screening.room?.includes('IMAX') ? 'IMAX' : (screening.type || '2D'),
-          lang: screening.lang || 'HU'
+          time: timeStr, 
+          type: '2D', // Később a backend Room objektumából bekötheted, ha van pl. IMAX tulajdonság
+          lang: 'HU'  
         });
       });
     }
@@ -57,14 +64,20 @@ const MovieDetails = () => {
     return {
       ...data,
       title: data.title || "Ismeretlen Cím",
-      cast: data.cast ? data.cast.split(',') : ["-"],
+      posterUrl: data.picturePath ? data.picturePath.replace('/Frontend/my-app/public', '') : "",
+      description: data.description || "Nincs elérhető leírás.",
+      director: data.director || "Ismeretlen",
+      rating: data.rating,
+      cast: data.cast ? data.cast.split(',') : ["-"], // Ha nincs cast a db-ben, ez jelenik meg
       duration: data.length ? `${data.length} perc` : "-",
       ageRating: data.pg || "12",
+      // Itt a showtimesMap-et alakítjuk át tömbbé a felület számára!
       showtimes: Array.from(showtimesMap.values())
     };
   };
 
-  if (loading) return <div className="loading">Betöltés...</div>;
+  if (loading) return <div className="loading" style={{ textAlign: 'center', padding: '50px', color: 'white' }}>Betöltés...</div>;
+  
   if (error || !movie) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px', color: '#888' }}>
@@ -73,6 +86,7 @@ const MovieDetails = () => {
       </div>
     );
   }
+  
   const allTypes = ['Összes', ...new Set(movie.showtimes.flatMap(day => day.sessions.map(s => s.type)))];
 
   return (
@@ -87,18 +101,16 @@ const MovieDetails = () => {
         </div>
 
         <div className="metadata">
-          <span className="meta-tag meta-genre">{movie.genre}</span>
           <span className="meta-tag meta-duration">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '5px'}}><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             {movie.duration}
           </span>
           <span className={`meta-tag meta-age age-${movie.ageRating}`}>{movie.ageRating}+</span>
+          {movie.rating && <span className="meta-tag meta-rating">⭐ IMDb: {movie.rating}</span>}
         </div>
 
         <div className="crew-info">
-          <p><strong>Bemutató ideje:</strong> {movie.releaseDate || "-"}</p>
-          <p><strong>Forgalmazó:</strong> {movie.distributor || "-"}</p>
-          <p><strong>Rendező:</strong> {movie.director || "Ismeretlen"}</p>
+          <p><strong>Rendező:</strong> {movie.director}</p>
           <p><strong>Szereplők:</strong> {movie.cast.join(', ')}</p>
         </div>
 
@@ -123,7 +135,7 @@ const MovieDetails = () => {
           </div>
 
           {movie.showtimes.length === 0 ? (
-            <p style={{ color: '#777' }}>Ehhez a filmhez jelenleg nincsenek aktív vetítések.</p>
+            <p style={{ color: '#777', padding: '20px 0' }}>Ehhez a filmhez jelenleg nincsenek aktív vetítések.</p>
           ) : (
             movie.showtimes.map((day, idx) => {
               const filteredSessions = currentFilter === 'Összes' 
@@ -142,7 +154,7 @@ const MovieDetails = () => {
                     {filteredSessions.map(session => (
                       <button 
                         key={session.id}
-                        className={`time-btn ${session.lang === 'HU' ? 'bg-hu' : session.lang.includes('EN') ? 'bg-en-hu' : ''}`}
+                        className="time-btn"
                         onClick={() => window.location.href = `jegy.html?screeningId=${session.id}`}
                       >
                         <span className="btn-time">{session.time}</span>

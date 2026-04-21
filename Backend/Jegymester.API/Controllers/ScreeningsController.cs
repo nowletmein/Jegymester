@@ -64,19 +64,6 @@ namespace Jegymester.API.Controllers
             }
         }
 
-<<<<<<< HEAD
-
-
-         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
-  	{
-   	    try {
-           	var result = _screeningService.Create(screeningCreateDto);
-           	return Ok(result);
-       		} catch(ScreeningAlreadyExists ex ) {
-           	return BadRequest(ex.Message);
-       		}
-   	}
-=======
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
         {
@@ -92,6 +79,5 @@ namespace Jegymester.API.Controllers
             var result = await _screeningService.AddTestData();
             return Ok(result);
         }
->>>>>>> 931aadb3e5c3c97bb54508b8471e4b82e584d72e
     }
 }

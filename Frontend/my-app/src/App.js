@@ -11,6 +11,7 @@ import Admin from './Components/adminpage';
 import Cashier from './Components/cashier';
 import Profile from './Components/profile';
 import Purchase from './Components/purchase';
+import MovieDetails from './Components/moviedetails';
 
 
 function App() {
@@ -34,7 +35,7 @@ function App() {
   );*/
 
   return (
-    <Purchase/>
+    <MovieDetailsPage/>
   );
 }
 
