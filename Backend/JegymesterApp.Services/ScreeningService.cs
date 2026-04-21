@@ -87,14 +87,12 @@ namespace JegymesterApp.Services {
 
         public async Task<ScreeningDto> Get(int Id) {
               
-            var screening = await _context.Screenings
-            .Where(x => x.Id == Id)
-            .Select(s => MapToScreeningDto(s)).FirstOrDefaultAsync();
+            var screening = await _context.Screenings.FirstOrDefaultAsync(x => x.Id == Id);
             if(screening == null)
             {
                 throw new ScreeningNotFoundException("Screening Not Found");
             }
-            return screening;
+            return MapToScreeningDto(screening);
         }
 
         public async Task<List<WeeklyScheduleDto>> GetWeekly() {
