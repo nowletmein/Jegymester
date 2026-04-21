@@ -47,10 +47,7 @@ namespace Jegymester.API.Controllers
             var result = await _screeningService.Edit(Id, screeningCreateDto);
             return Ok(result);
         }
-<<<<<<< HEAD
 
-=======
->>>>>>> 3566f7b5a8a754c3e982406d2072f3e479226ed0
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
         {
@@ -63,9 +60,6 @@ namespace Jegymester.API.Controllers
             var result = await _screeningService.AddTestData();
             return Ok(result);
         }
-<<<<<<< HEAD
-=======
 
->>>>>>> 3566f7b5a8a754c3e982406d2072f3e479226ed0
     }
 }
