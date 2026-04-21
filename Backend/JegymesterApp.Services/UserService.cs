@@ -18,9 +18,9 @@ namespace JegymesterApp.Services
         Task<int> Delete(int userId);
         Task<int> Edit(int userId, UserEditDto userCreateDto);
         Task<UserDto> Login(string email, string password);
-        Task<List<RoleDto>> GetRolesAsync();
+        Task<List<RoleDto>> GetRoles();
         Task<int> CreateRole(RoleCreateDto roleCreateDto);
-
+        Task<int> AddRoleToUser(int roleId, int userId);
     }
     public class UserService : IUserService
     {
@@ -166,7 +166,7 @@ namespace JegymesterApp.Services
             }
             return UserRole;
         }
-        public async Task<List<RoleDto>> GetRolesAsync() {
+        public async Task<List<RoleDto>> GetRoles() {
             var roles = await _context.Roles.ToListAsync();
             var roleDto = new List<RoleDto>();
             foreach (var role in roles) {
