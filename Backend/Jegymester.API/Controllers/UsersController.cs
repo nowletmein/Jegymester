@@ -11,6 +11,9 @@ namespace Jegymester.API.Controllers
     public class UsersController: ControllerBase
     {
         private readonly IUserService _userService;
-        public UsersController() { }
+        public UsersController(IUserService userService) {
+            _userService = userService;
+        }
+
     }
 }

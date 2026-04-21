@@ -41,6 +41,8 @@ namespace Jegymester.API.Controllers
             var result = await _ticketService.Delete(ticketId);
             return Ok(result);
         }
+        [HttpPatch]
+        [Route("{ticketId}")]
         public async Task<IActionResult> Cancel(int ticketId) {
             var result = await _ticketService.Cancel(ticketId);
             return Ok(result);
