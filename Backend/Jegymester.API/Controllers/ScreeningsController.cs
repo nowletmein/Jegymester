@@ -28,70 +28,37 @@ namespace Jegymester.API.Controllers
         [Route("{Id}")]
         public async Task<IActionResult> Get(int Id) 
         {
-            try
-            {
-                var result = await _screeningService.Get(Id);
-                return Ok(result);
-            }
-            catch (ScreeningNotFoundException Scex) 
-            { 
-                return NotFound(Scex.Message);
-            }
+             var result = await _screeningService.Get(Id);
+             return Ok(result);  
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("{Id}")]
         public async Task<IActionResult> Delete(int Id)
-        {
-            try {
-                var result = await _screeningService.Delete(Id);
-                return Ok(result);
-            } catch ( ScreeningNotFoundException Scex ) {
-                return NotFound(Scex.Message);
-            }
-            
+        {   
+             var result = await _screeningService.Delete(Id);
+             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("{Id}")]
         public async Task<IActionResult> Edit(int Id, [FromBody] ScreeningCreateDto screeningCreateDto)
         {
-            try {
-                var result = await _screeningService.Edit(Id, screeningCreateDto);
-                return Ok(result);
-            } catch ( ScreeningNotFoundException Scex ) {
-                return NotFound(Scex);
-            }
+            var result = await _screeningService.Edit(Id, screeningCreateDto);
+            return Ok(result);
         }
-
-<<<<<<< HEAD
-
-
-         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
-  	{
-   	    try {
-           	var result = _screeningService.Create(screeningCreateDto);
-           	return Ok(result);
-       		} catch(ScreeningAlreadyExists ex ) {
-           	return BadRequest(ex.Message);
-       		}
-   	}
-=======
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
         {
-            try {
-                var result = await _screeningService.Create(screeningCreateDto);
-                return Ok(result);
-            } catch(ScreeningAlreadyExists ex ) {
-                return BadRequest(ex.Message);
-            }
+            var result = await _screeningService.Create(screeningCreateDto);
+            return Ok(result);
+            
         }
         [HttpPost]
         public async Task<IActionResult> AddTestData() {
             var result = await _screeningService.AddTestData();
             return Ok(result);
         }
->>>>>>> 931aadb3e5c3c97bb54508b8471e4b82e584d72e
+
     }
 }

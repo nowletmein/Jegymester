@@ -32,44 +32,29 @@ namespace Jegymester.API.Controllers {
         [HttpGet]
         [Route("{movieId}")]
         public async Task<IActionResult> Get(int movieId) {
-            try {
-                var movie = await _movieService.Get(movieId);
-                return Ok(movie);
-            } catch (MovieNotFoundException ex) {
-                return NotFound(ex.Message); 
-            }
+            var movie = await _movieService.Get(movieId);
+            return Ok(movie);
+         
         }
         //TODO Movie adatok változtatása | Movie létrehozás | Movie törlés
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] MovieCreateDto movieCreateDto) {
-            try {
-                var result = await _movieService.Create(movieCreateDto);
-                return Ok(result);
-            } catch (MovieAlreadyExistsException ex) { 
-                return BadRequest(ex.Message);
-            }
-            
+             var result = await _movieService.Create(movieCreateDto);
+             return Ok(result);
         }
-        [HttpPost]
+
+        [HttpDelete]
         [Route("{movieId}")]
         public async Task<IActionResult> Delete(int movieId) {
-            try {
-                var result = await _movieService.Delete(movieId);
-                return Ok(result);
-            } catch (MovieNotFoundException ex) { 
-                return NotFound(ex.Message);
-            }
-            
+            var result = await _movieService.Delete(movieId);
+            return Ok(result);
         }
-        [HttpPost]
+
+        [HttpPut]
         [Route("{movieId}")]
         public async Task<IActionResult> Edit([FromBody] MovieCreateDto movieCreateDto, int movieId) {
-            try {
-                var result = await _movieService.Edit(movieCreateDto, movieId);
-                return Ok(result);
-            } catch ( MovieNotFoundException ex ) {
-                return NotFound(ex.Message);
-            }
+            var result = await _movieService.Edit(movieCreateDto, movieId);
+            return Ok(result);
         }
         [HttpPost]
         public async Task<IActionResult> AddTestData() {

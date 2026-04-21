@@ -18,53 +18,32 @@ namespace Jegymester.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] TicketCreateDto ticketCreateDto)
-        {
+        public async Task<IActionResult> Create([FromBody] TicketCreateDto ticketCreateDto) {
             var result = await _ticketService.Create(ticketCreateDto);
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPatch]
         [Route("{ticketId}")]
-        public async Task<IActionResult> VerifyTicket(int ticketId)
-        {
-            try
-            {
-                var result = await _ticketService.Verify(ticketId);
-                return Ok(result);
-            } 
-            catch (TicketNotFoundException Tex)
-            {
-                return NotFound(Tex.Message);
-            }
-
+        public async Task<IActionResult> VerifyTicket(int ticketId) {
+            var result = await _ticketService.Verify(ticketId);
+            return Ok(result);
         }
+
         [HttpGet]
         [Route("{ticketId}")]
         public async Task<IActionResult> Get(int ticketId) {
-            try
-            {
-                var result = await _ticketService.Get(ticketId);
-                return Ok(result);
-            }
-            catch (TicketNotFoundException Tex)
-            {
-                return NotFound(Tex.Message);
-            }
-           
+            var result = await _ticketService.Get(ticketId);
+            return Ok(result);
         }
-        [HttpPost]
-        public async Task<IActionResult> Delete(int ticketId)
-        {
-            try
-            {
-                var result = await _ticketService.Delete(ticketId);
-                return Ok(result);
-            }
-            catch (TicketNotFoundException Tex) {
-                return NotFound(Tex.Message);
-            }
-            
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int ticketId) {
+            var result = await _ticketService.Delete(ticketId);
+            return Ok(result);
+        }
+        public async Task<IActionResult> Cancel(int ticketId) {
+            var result = await _ticketService.Cancel(ticketId);
+            return Ok(result);
         }
     }
 }

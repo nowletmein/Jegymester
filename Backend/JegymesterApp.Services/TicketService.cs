@@ -12,6 +12,7 @@ namespace JegymesterApp.Services
         Task<int> Verify(int ticketId);
         Task<TicketDto> Get(int ticketId);
         Task<int> Delete(int ticketId);
+        Task<int> Cancel(int ticketId);
     }
     public class TicketService : ITicketService
     {
@@ -100,7 +101,7 @@ namespace JegymesterApp.Services
 
         public async Task<TicketDto> Get(int ticketId)
         {
-            var ticket = _context.Tickets.FirstOrDefault(x => x.Id == ticketId);
+            var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
             if (ticket == null) {
                 throw new TicketNotFoundException($"There is no ticket with this ID: {ticketId}");
             }
@@ -115,13 +116,31 @@ namespace JegymesterApp.Services
 
         public async Task<int> Verify(int ticketId)
         {
-            var ticket = _context.Tickets.FirstOrDefault(x => x.Id == ticketId);
+            var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
             if (ticket == null) 
             {
                 throw new TicketNotFoundException($"There is no ticket with this ID: {ticketId}");
             }
             
             ticket.IsVerified = true;
+            await _context.SaveChangesAsync();
+            return ticket.Id;
+        }
+
+        public async Task<int> Cancel(int ticketId)
+        {
+            var ticket = await _context.Tickets.Include(x => x.Screening).FirstOrDefaultAsync(x => x.Id == ticketId);
+            if (ticket == null) { 
+                throw new TicketNotFoundException("No ticket with this id found");
+            }
+            var timeUntilScreening = ticket.Screening.ScreeningDate - DateTime.Now;
+
+            if (timeUntilScreening.TotalHours < 4)
+            {
+                throw new InvalidOperationException("Már nem lehet a jegyet lemondani");
+            }
+
+            ticket.IsCancelled = true;
             await _context.SaveChangesAsync();
             return ticket.Id;
         }

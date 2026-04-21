@@ -149,7 +149,7 @@ namespace JegymesterApp.Services {
 
         public async Task<int> Delete(int Id) {
 
-              var movie = _context.Movies.FirstOrDefault(x => x.Id == Id);
+              var movie = await _context.Movies.FirstOrDefaultAsync(x => x.Id == Id);
               if(movie == null) {
                   throw new MovieNotFoundException("Movie With This Id Doesent Exists");
               }
