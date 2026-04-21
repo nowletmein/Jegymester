@@ -10,7 +10,7 @@ namespace Jegymester.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class ScreeningsController:Controller
+    public class ScreeningsController:ControllerBase
     {
         private readonly IScreeningService _screeningService;
         public ScreeningsController(IScreeningService screeningService)
