@@ -76,7 +76,7 @@ namespace JegymesterApp.Services
                     PurchaseDate = t.PurchaseDate,
                     ScreeningId = t.ScreeningId,
                     UserId = t.UserId,
-                    Price= t.Screening.Price,
+                    Price = t.Screening?.Price ?? 0,
                     // Add other Ticket properties here
                 }).ToList() ?? new List<TicketDto>()
             };

@@ -40,19 +40,17 @@ namespace JegymesterApp.Services
                 Price = screening.Price,
                 RoomId = screening.RoomId,
                 // Mapping the nested Tickets to TicketDtos
-                TicketDtos = screening.Tickets.Select(t => new TicketDto {
+                TicketDtos = screening.Tickets?.Select(t => new TicketDto {
                     Id = t.Id,
                     ScreeningId = t.ScreeningId,
                     UserId = t.UserId,
-                    UserName = t.User.Name,
-                    
+                    UserName = t.User?.Name,
                     Phone = t.Phone,
                     Email = t.Email,
                     PurchaseDate = t.PurchaseDate,
                     IsCancelled = t.IsCancelled,
                     IsVerified = t.IsVerified
-
-                }).ToList()
+                }).ToList() ?? new List<TicketDto>()
             };
             return screeningDto;
         }

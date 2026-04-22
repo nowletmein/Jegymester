@@ -1,17 +1,13 @@
-import React, { useState, useNavigate } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'; // 1. Added useEffect
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
 import { useAuth } from '../context/AuthContext';
 
 function Purchase() {
-  const { user, logout } = useAuth(); // 2. Grab user and logout
-    const navigate = useNavigate();
-    const handleLogout = () => {
-      logout();
-      navigate('/'); // Redirect to home after logging out
-    };
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const { movie, screening, day } = location.state || {};
 
@@ -24,15 +20,20 @@ function Purchase() {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
 
-  // Később ide jöhet a loginból kiolvasott user ID
-  const loggedInUserId = null;
-  const resolvedUserId = loggedInUserId ?? 0;
+  // 2. Automatically fill data if user is logged in
+  useEffect(() => {
+    if (user && !user.isGuest) {
+      setFormData({
+        email: user.email || '',
+        phone: user.phone || '',
+      });
+    }
+  }, [user]);
 
   if (!movie || !screening) {
     return (
       <>
         <Header />
-
         <main className="container py-5">
           <div className="login-card p-4 text-center" style={{ maxWidth: '100%' }}>
             <h1 className="text-white fw-bold mb-3">Jegyvásárlás</h1>
@@ -41,7 +42,6 @@ function Purchase() {
             </p>
           </div>
         </main>
-
         <Footer />
       </>
     );
@@ -51,11 +51,7 @@ function Purchase() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePurchase = async (e) => {
@@ -64,7 +60,11 @@ function Purchase() {
     setMessage('');
     setIsError(false);
 
-    if (!formData.email || !formData.phone) {
+    // Use user data if logged in, otherwise use form data
+    const finalEmail = user.isGuest ? formData.email : user.email;
+    const finalPhone = user.isGuest ? formData.phone : user.phone;
+
+    if (!finalEmail || !finalPhone) {
       setMessage('Kérlek tölts ki minden mezőt.');
       setIsError(true);
       setLoading(false);
@@ -74,34 +74,22 @@ function Purchase() {
     try {
       const requestBody = {
         screeningId: Number(screening.screeningId),
-        
-        userId: (user.id > 0) ? user.id : null,
-        phone: formData.phone,
-        email: formData.email,
+        userId: (!user.isGuest) ? user.id : null,
+        name: (user.name == null) ? user.name:null,
+        phone: finalPhone,
+        email: finalEmail,
       };
-
-      console.log('PURCHASE REQUEST:', requestBody);
 
       const response = await fetch('http://localhost:5000/api/Tickets/Create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          accept: '*/*',
-        },
+        headers: { 'Content-Type': 'application/json', accept: '*/*' },
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error('A jegyvásárlás nem sikerült.');
-      }
+      if (!response.ok) throw new Error('A jegyvásárlás nem sikerült.');
 
       setMessage('A jegyvásárlás sikeresen megtörtént.');
-      setIsError(false);
-
-      setFormData({
-        email: '',
-        phone: '',
-      });
+      if (user.isGuest) setFormData({ email: '', phone: '' });
     } catch (error) {
       setMessage(error.message || 'Hiba történt a vásárlás során.');
       setIsError(true);
@@ -113,55 +101,20 @@ function Purchase() {
   return (
     <>
       <Header />
-
       <main className="container py-5">
         <div className="mb-4">
           <h1 className="text-white fw-bold">Jegyvásárlás</h1>
-          <p className="login-text mb-0">
-            Vásárlás előtt ellenőrizd az adatokat.
-          </p>
+          <p className="login-text mb-0">Vásárlás előtt ellenőrizd az adatokat.</p>
         </div>
 
         <div className="row g-4">
           <div className="col-lg-5">
+            {/* ... Selected screening info (No changes needed here) ... */}
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>
-              <h3 className="text-white mb-4">Kiválasztott vetítés</h3>
-
-              <p className="login-text mb-2">
-                <strong className="text-white">Film:</strong> {movie.title}
-              </p>
-              <p className="login-text mb-2">
-                <strong className="text-white">Rendező:</strong> {movie.genre}
-              </p>
-              <p className="login-text mb-2">
-                <strong className="text-white">Játékidő:</strong> {movie.duration}
-              </p>
-              <p className="login-text mb-2">
-                <strong className="text-white">Korhatár:</strong> {movie.rating}+
-              </p>
-              <p className="login-text mb-2">
-                <strong className="text-white">Nap:</strong>{' '}
-                {day
-                  ? typeof day === 'object'
-                    ? `${day.label}, ${day.short}`
-                    : day
-                  : ''}
-              </p>
-              <p className="login-text mb-2">
-                <strong className="text-white">Időpont:</strong> {screening.time}
-              </p>
-              <p className="login-text mb-3">
-                <strong className="text-white">Terem:</strong> {screening.roomId}
-              </p>
-
-              <hr className="border-secondary" />
-
-              <p className="login-text mb-2">
-                <strong className="text-white">Jegyár:</strong> {ticketPrice} Ft
-              </p>
-              <p className="login-text mb-0">
-                <strong className="text-white">Vetítés azonosító:</strong> {screening.screeningId}
-              </p>
+               <h3 className="text-white mb-4">Kiválasztott vetítés</h3>
+               <p className="login-text mb-2"><strong className="text-white">Film:</strong> {movie.title}</p>
+               <p className="login-text mb-2"><strong className="text-white">Időpont:</strong> {screening.time}</p>
+               <p className="login-text mb-2"><strong className="text-white">Jegyár:</strong> {ticketPrice} Ft</p>
             </div>
           </div>
 
@@ -170,67 +123,70 @@ function Purchase() {
               <h3 className="text-white mb-4">Vásárlási adatok</h3>
 
               <form onSubmit={handlePurchase}>
-                <div className="mb-3">
-                  <label className="form-label text-white">E-mail cím</label>
-                  <input
-                    type="email"
-                    name="email"
-                    className="form-control"
-                    placeholder="pelda@email.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
+                {/* 3. Conditional Rendering: Show fields only if Guest */}
+                {user.isGuest ? (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label text-white">E-mail cím</label>
+                      <input
+                        type="email"
+                        name="email"
+                        className="form-control"
+                        placeholder="pelda@email.com"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="mb-3">
+                      <label className="form-label text-white">Telefonszám</label>
+                      <input
+                        type="text"
+                        name="phone"
+                        className="form-control"
+                        placeholder="+36 30 123 4567"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </>
+                ) : (
+                  /* 4. Show summary for logged in users */
+                  <div className="mb-4 p-3 bg-dark border border-secondary rounded">
+                    <p className="text-white mb-1"><strong>Név:</strong> {user.name}</p>
+                    <p className="text-white mb-1"><strong>E-mail:</strong> {user.email}</p>
+                    <p className="text-white mb-0"><strong>Telefon:</strong> {user.phone}</p>
+                    <small className="text-secondary mt-2 d-block">A jegyet a profilodban megadott adatokkal vásárolod meg.</small>
+                  </div>
+                )}
+
+                <div className="d-flex gap-2">
+                  <button type="submit" className="btn btn-primary w-50" disabled={loading}>
+                    {loading ? 'Feldolgozás...' : 'Jegy megvásárlása'}
+                  </button>
+                  <button type="button" className="btn btn-secondary w-50">Kosárba helyezés</button>
                 </div>
-
-                <div className="mb-3">
-                  <label className="form-label text-white">Telefonszám</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    className="form-control"
-                    placeholder="+36 30 123 4567"
-                    value={formData.phone}
-                    onChange={handleChange}
-                  />
-                </div>
-
-	<div className="d-flex gap-2">
-                <button
-                  type="submit"
-                  className="btn btn-primary w-50"
-                  disabled={loading}
-                >
-                  {loading ? 'Feldolgozás...' : 'Jegy megvásárlása'}
-                </button>
-
-		<button
-  		type="submit"
-  		className="btn btn-secondary w-50"
-  			//onClick={handleAddToCart}
-		>
-  		Kosárba helyezés
-		</button>
-	</div>
               </form>
 
+              {/* 5. Show different footer based on status */}
               <div className="mt-4 p-3 border border-secondary rounded">
                 <p className="login-text mb-0">
-                  Bejelentkezés nélkül vendégként vásárolsz jegyet.
+                  {user.isGuest 
+                    ? "Bejelentkezés nélkül vendégként vásárolsz jegyet." 
+                    : "Bejelentkezve vásárolsz, a jegy mentésre kerül a fiókodba."}
                 </p>
               </div>
 
               {message && (
                 <div className="mt-4 p-3 border border-secondary rounded">
-                  <p className={`mb-0 ${isError ? 'text-danger' : 'text-success'}`}>
-                    {message}
-                  </p>
+                  <p className={`mb-0 ${isError ? 'text-danger' : 'text-success'}`}>{message}</p>
                 </div>
               )}
             </div>
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );

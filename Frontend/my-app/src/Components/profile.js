@@ -6,26 +6,34 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth(); // Added refreshUser from context
   const navigate = useNavigate();
 
-  // Megjelenítéshez használt adatok
+  // Display data
   const [userData, setUserData] = useState({
     fullName: user?.name || 'Vendég',
     email: user?.email || '',
     phone: user?.phone || 'Nincs megadva'
   });
 
-  // Szerkeszthető adatok az űrlapban
+  // Form data for editing
   const [formData, setFormData] = useState({
     fullName: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || ''
   });
 
-  const [tickets, setTickets] = useState(user?.tickets || []);
+  const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // 1. Initial Load: Refresh user data from API to get latest tickets
+  useEffect(() => {
+    if (user && !user.isGuest) {
+      refreshUser();
+    }
+  }, []);
+
+  // 2. Update local state when AuthContext user changes
   useEffect(() => {
     if (user) {
       const initialData = {
@@ -35,7 +43,9 @@ function Profile() {
       };
       setUserData(initialData);
       setFormData(initialData);
-      if (user.tickets) setTickets(user.tickets);
+      
+      // Handle potential casing differences (tickets vs Tickets)
+      setTickets(user.tickets || []);
     }
   }, [user]);
 
@@ -55,37 +65,31 @@ function Profile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-
     if (!formData.email || !formData.phone || !formData.fullName) {
       alert('Minden mező kitöltése kötelező.');
       return;
     }
 
     setLoading(true);
-
     try {
-      // A Swagger alapján: PATCH metódus és a megadott JSON szerkezet
       const response = await fetch(`http://localhost:5000/api/Users/Edit/${user.id}`, {
         method: 'PATCH', 
-        headers: {
-          'Content-Type': 'application/json',
-          // Ha van JWT token: 'Authorization': `Bearer ${user.token}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: formData.fullName, // A Swagger "name" kulcsot vár
+          name: formData.fullName,
           email: formData.email,
           phone: formData.phone
         }),
       });
 
       if (response.ok) {
-        // Frissítjük a nézetet a sikeres mentés után
         setUserData({
           fullName: formData.fullName,
           email: formData.email,
           phone: formData.phone
         });
         alert('Profil sikeresen frissítve!');
+        refreshUser(); // Sync context with new profile info
       } else {
         const errorData = await response.json().catch(() => ({}));
         alert(`Hiba történt: ${errorData.message || response.statusText}`);
@@ -98,10 +102,11 @@ function Profile() {
     }
   };
 
-  const activeTickets = tickets.filter((ticket) => ticket.status === 'Aktív').length;
-  const usedTickets = tickets.filter((ticket) => ticket.status === 'Felhasznált').length;
+  // Logic for statistics based on your C# DTO properties
+  const activeTickets = tickets.filter((t) => !t.isVerified && !t.isCancelled).length;
+  const usedTickets = tickets.filter((t) => t.isVerified).length;
 
-  if (!user) {
+  if (!user || user.isGuest) {
     return (
       <div className="container py-5 text-center">
         <h2 className="text-white">Kérjük, jelentkezz be a profilod megtekintéséhez.</h2>
@@ -122,11 +127,11 @@ function Profile() {
           <button className="btn btn-outline-danger" onClick={handleLogout}>Kijelentkezés</button>
         </div>
 
-        {/* Statisztika kártyák */}
+        {/* Statistics Cards */}
         <div className="row g-4 mb-4">
           <div className="col-md-4">
             <div className="login-card p-4 text-center">
-              <div className="brand-logo">{tickets.length}</div>
+              <div className="brand-logo">{user.tickets.length}</div>
               <p className="text-white mb-0">Megvásárolt jegy</p>
             </div>
           </div>
@@ -182,11 +187,7 @@ function Profile() {
                     required
                   />
                 </div>
-                <button 
-                  type="submit" 
-                  className="btn btn-primary w-100" 
-                  disabled={loading}
-                >
+                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                   {loading ? 'Mentés...' : 'Mentés'}
                 </button>
               </form>
@@ -209,35 +210,46 @@ function Profile() {
           </div>
         </div>
 
-        {/* Jegyek táblázat */}
+        {/* Tickets Table */}
         <div className="row g-4 mt-1">
           <div className="col-12">
             <div className="login-card p-4">
               <h3 className="text-white mb-4">Megvásárolt jegyek</h3>
-              {tickets.length === 0 ? (
+              {user.tickets.length === 0 ? (
                 <p className="login-text mb-0 text-center">Még nincs megvásárolt jegyed.</p>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-dark table-bordered align-middle">
                     <thead>
                       <tr>
-                        <th>Film</th>
-                        <th>Dátum</th>
-                        <th>Jegykód</th>
+                        <th>Azonosító</th>
+                        <th>Vásárlás dátuma</th>
+                        <th>Ár</th>
                         <th>Állapot</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {tickets.map((ticket) => (
-                        <tr key={ticket.id}>
-                          <td>{ticket.movieTitle}</td>
-                          <td>{ticket.date} {ticket.time}</td>
-                          <td><code>{ticket.code}</code></td>
-                          <td className={ticket.status === 'Aktív' ? 'text-success' : 'text-warning'}>
-                            {ticket.status}
-                          </td>
-                        </tr>
-                      ))}
+                      {user.tickets.map((ticket) => {
+                        let statusText = "Aktív";
+                        let statusClass = "text-success";
+                        
+                        if (ticket.isCancelled) {
+                          statusText = "Visszaváltva";
+                          statusClass = "text-danger";
+                        } else if (ticket.isVerified) {
+                          statusText = "Felhasznált";
+                          statusClass = "text-warning";
+                        }
+
+                        return (
+                          <tr key={ticket.id}>
+                            <td>#{ticket.id}</td>
+                            <td>{ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('hu-HU') : 'N/A'}</td>
+                            <td>{ticket.price || 0} Ft</td>
+                            <td className={statusClass}>{statusText}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

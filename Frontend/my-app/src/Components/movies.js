@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
   return date.toISOString().split('T')[0];
 }*/
 
+
 var weeklymovies = fetch("http://localhost:5000/api/Screenings/GetWeekly")
 
 //El volt csúszva egy nappal hátrafelé, így ezt módosítottam
