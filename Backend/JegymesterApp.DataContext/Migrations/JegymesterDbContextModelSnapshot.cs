@@ -56,7 +56,7 @@ namespace JegymesterApp.DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Movies");
+                    b.ToTable("Movies", (string)null);
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Role", b =>
@@ -73,7 +73,7 @@ namespace JegymesterApp.DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Room", b =>
@@ -96,7 +96,7 @@ namespace JegymesterApp.DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rooms");
+                    b.ToTable("Rooms", (string)null);
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Screening", b =>
@@ -130,7 +130,7 @@ namespace JegymesterApp.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Screenings");
+                    b.ToTable("Screenings", (string)null);
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Ticket", b =>
@@ -170,7 +170,7 @@ namespace JegymesterApp.DataContext.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.User", b =>
@@ -199,7 +199,7 @@ namespace JegymesterApp.DataContext.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("RoleUser", b =>
@@ -214,7 +214,7 @@ namespace JegymesterApp.DataContext.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("RoleUser");
+                    b.ToTable("RoleUser", (string)null);
                 });
 
             modelBuilder.Entity("JegymesterApp.DataContext.Entites.Screening", b =>

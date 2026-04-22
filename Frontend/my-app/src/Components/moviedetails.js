@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
 const MovieDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -75,7 +76,8 @@ const MovieDetails = () => {
             id: screening.id,
             time: timeStr, 
             type: typeStr, 
-            lang: 'HU'  
+            lang: 'HU',
+            roomId: screening.roomId // 2. EZT A SORT ADD HOZZÁ
           });
         }
       });
@@ -186,7 +188,22 @@ const MovieDetails = () => {
                         key={session.id}
                         className="time-btn"
                         // ÁTIRÁNYÍTÁS A PURCHASE OLDALRA:
-                        onClick={() => window.location.href = `/purchase?screeningId=${session.id}`}
+                        onClick={() => navigate('/purchase', {
+                          state: {
+                            movie: {
+                              title: movie.title,
+                              genre: movie.director, // A purchase.js ezt használja a rendezőhöz
+                              duration: movie.duration,
+                              rating: movie.ageRating
+                            },
+                            screening: {
+                              screeningId: session.id,
+                              time: session.time,
+                              roomId: session.roomId
+                            },
+                            day: `${day.dayName} (${day.dateStr})`
+                          }
+                        })}
                       >
                         <span className="btn-time">{session.time}</span>
                         <span className="btn-type">{session.type}</span>
