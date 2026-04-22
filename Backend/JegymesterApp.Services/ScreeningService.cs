@@ -8,8 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace JegymesterApp.Services {
-    public interface IScreeningService {
+
+namespace JegymesterApp.Services
+{
+    public interface IScreeningService
+    {
         Task<List<WeeklyScheduleDto>> GetWeekly();
         Task<ScreeningDto> Get(int Id);
         Task<int> Create(ScreeningCreateDto screeningCreateDto);
@@ -66,6 +69,7 @@ namespace JegymesterApp.Services {
             
             if ( screeningDto == null ) return null;
 
+
             return new Screening() {
                 Id = screeningDto.Id,
                 MovieId = screeningDto.MovieId,
@@ -98,6 +102,7 @@ namespace JegymesterApp.Services {
         }
 
         public async Task<List<WeeklyScheduleDto>> GetWeekly() {
+
             var today = DateTime.Today;
 
             // Get Monday of the current week
@@ -121,6 +126,7 @@ namespace JegymesterApp.Services {
                 Screenings = g.Select(s => MapToScreeningDto(s)).ToList()
             })
             .ToList();
+
             
 
         }
@@ -219,5 +225,7 @@ namespace JegymesterApp.Services {
             _context.Screenings.AddRange(screenings);
             return await _context.SaveChangesAsync();
         }
+
     }
 }
+
