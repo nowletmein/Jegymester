@@ -1,57 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
 import { useAuth } from '../context/AuthContext';
-import { Link,useNavigate } from 'react-router-dom';
-
-
-
-
-const initialTickets = [
-  {
-    id: 1,
-    movieTitle: 'Dűne: Második rész',
-    date: '2025-04-07',
-    time: '17:00',
-    hall: '1-es terem',
-    seat: 'A12',
-    code: 'JEGY-1001',
-    status: 'Aktív',
-  },
-  {
-    id: 2,
-    movieTitle: 'Kung Fu Panda 4',
-    date: '2025-04-08',
-    time: '12:30',
-    hall: '2-es terem',
-    seat: 'B05',
-    code: 'JEGY-1002',
-    status: 'Aktív',
-  },
-  {
-    id: 3,
-    movieTitle: 'Godzilla x Kong',
-    date: '2025-04-09',
-    time: '19:00',
-    hall: '3-as terem',
-    seat: 'C08',
-    code: 'JEGY-1003',
-    status: 'Felhasznált',
-  },
-];
+import { useNavigate } from 'react-router-dom';
 
 function Profile() {
-  const { user, logout } = useAuth(); // 2. Grab user and logout
-    const navigate = useNavigate();
-    const handleLogout = () => {
-      logout();
-      navigate('/'); // Redirect to home after logging out
-    };
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const [userData, setUserData] = useState(initialUser);
-  const [formData, setFormData] = useState(initialUser);
-  const [tickets] = useState(initialTickets);
+  // Megjelenítéshez használt adatok
+  const [userData, setUserData] = useState({
+    fullName: user?.name || 'Vendég',
+    email: user?.email || '',
+    phone: user?.phone || 'Nincs megadva'
+  });
+
+  // Szerkeszthető adatok az űrlapban
+  const [formData, setFormData] = useState({
+    fullName: user?.name || '',
+    email: user?.email || '',
+    phone: user?.phone || ''
+  });
+
+  const [tickets, setTickets] = useState(user?.tickets || []);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const initialData = {
+        fullName: user.name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      };
+      setUserData(initialData);
+      setFormData(initialData);
+      if (user.tickets) setTickets(user.tickets);
+    }
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    alert('Sikeresen kijelentkezett a fiókjából!');
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,50 +53,91 @@ function Profile() {
     }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
 
-    if (!formData.email || !formData.phone) {
-      alert('Az e-mail cím és telefonszám kitöltése kötelező.');
+    if (!formData.email || !formData.phone || !formData.fullName) {
+      alert('Minden mező kitöltése kötelező.');
       return;
     }
 
-    setUserData(formData);
-    alert('A személyes adatok sikeresen frissítve lettek.');
+    setLoading(true);
+
+    try {
+      // A Swagger alapján: PATCH metódus és a megadott JSON szerkezet
+      const response = await fetch(`http://localhost:5000/api/Users/Edit/${user.id}`, {
+        method: 'PATCH', 
+        headers: {
+          'Content-Type': 'application/json',
+          // Ha van JWT token: 'Authorization': `Bearer ${user.token}`
+        },
+        body: JSON.stringify({
+          name: formData.fullName, // A Swagger "name" kulcsot vár
+          email: formData.email,
+          phone: formData.phone
+        }),
+      });
+
+      if (response.ok) {
+        // Frissítjük a nézetet a sikeres mentés után
+        setUserData({
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone
+        });
+        alert('Profil sikeresen frissítve!');
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(`Hiba történt: ${errorData.message || response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Hálózati hiba:', error);
+      alert('Nem sikerült elérni a szervert.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const activeTickets = tickets.filter((ticket) => ticket.status === 'Aktív').length;
   const usedTickets = tickets.filter((ticket) => ticket.status === 'Felhasznált').length;
 
+  if (!user) {
+    return (
+      <div className="container py-5 text-center">
+        <h2 className="text-white">Kérjük, jelentkezz be a profilod megtekintéséhez.</h2>
+        <button className="btn btn-primary mt-3" onClick={() => navigate('/login')}>Belépés</button>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header />
-
       <main className="container py-5">
-        <div className="mb-4">
-          <h1 className="text-white fw-bold">Felhasználói fiók</h1>
-          <p className="login-text mb-0">
-            Személyes adatok kezelése és megvásárolt jegyek megtekintése.
-          </p>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 className="text-white fw-bold">Felhasználói fiók</h1>
+            <p className="login-text mb-0">Üdvözlünk, {userData.fullName}!</p>
+          </div>
+          <button className="btn btn-outline-danger" onClick={handleLogout}>Kijelentkezés</button>
         </div>
 
+        {/* Statisztika kártyák */}
         <div className="row g-4 mb-4">
           <div className="col-md-4">
-            <div className="login-card p-4 text-center" style={{ maxWidth: '100%' }}>
+            <div className="login-card p-4 text-center">
               <div className="brand-logo">{tickets.length}</div>
               <p className="text-white mb-0">Megvásárolt jegy</p>
             </div>
           </div>
-
           <div className="col-md-4">
-            <div className="login-card p-4 text-center" style={{ maxWidth: '100%' }}>
+            <div className="login-card p-4 text-center">
               <div className="brand-logo">{activeTickets}</div>
               <p className="text-white mb-0">Aktív jegy</p>
             </div>
           </div>
-
           <div className="col-md-4">
-            <div className="login-card p-4 text-center" style={{ maxWidth: '100%' }}>
+            <div className="login-card p-4 text-center">
               <div className="brand-logo">{usedTickets}</div>
               <p className="text-white mb-0">Felhasznált jegy</p>
             </div>
@@ -113,20 +146,20 @@ function Profile() {
 
         <div className="row g-4">
           <div className="col-lg-5">
-            <div className="login-card p-4" style={{ maxWidth: '100%' }}>
+            <div className="login-card p-4">
               <h3 className="text-white mb-4">Személyes adatok</h3>
-
-              <div className="mb-3">
-                <label className="form-label text-white">Teljes név</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={userData.fullName}
-                  disabled
-                />
-              </div>
-
               <form onSubmit={handleSave}>
+                <div className="mb-3">
+                  <label className="form-label text-white">Teljes név</label>
+                  <input 
+                    type="text" 
+                    name="fullName"
+                    className="form-control" 
+                    value={formData.fullName} 
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
                 <div className="mb-3">
                   <label className="form-label text-white">E-mail cím</label>
                   <input
@@ -135,9 +168,9 @@ function Profile() {
                     className="form-control"
                     value={formData.email}
                     onChange={handleChange}
+                    required
                   />
                 </div>
-
                 <div className="mb-3">
                   <label className="form-label text-white">Telefonszám</label>
                   <input
@@ -146,50 +179,43 @@ function Profile() {
                     className="form-control"
                     value={formData.phone}
                     onChange={handleChange}
+                    required
                   />
                 </div>
-
-                <button type="submit" className="btn btn-primary w-100">
-                  Adatok mentése
+                <button 
+                  type="submit" 
+                  className="btn btn-primary w-100" 
+                  disabled={loading}
+                >
+                  {loading ? 'Mentés...' : 'Mentés'}
                 </button>
               </form>
             </div>
           </div>
 
           <div className="col-lg-7">
-            <div className="login-card p-4" style={{ maxWidth: '100%' }}>
+            <div className="login-card p-4">
               <h3 className="text-white mb-4">Fiókadatok</h3>
-
               <div className="mb-3">
-                <p className="login-text mb-2">
-                  <strong className="text-white">Név:</strong> {userData.fullName}
-                </p>
-                <p className="login-text mb-2">
-                  <strong className="text-white">E-mail:</strong> {userData.email}
-                </p>
-                <p className="login-text mb-0">
-                  <strong className="text-white">Telefon:</strong> {userData.phone}
-                </p>
+                <p className="login-text mb-2"><strong className="text-white">Név:</strong> {userData.fullName}</p>
+                <p className="login-text mb-2"><strong className="text-white">E-mail:</strong> {userData.email}</p>
+                <p className="login-text mb-0"><strong className="text-white">Telefon:</strong> {userData.phone}</p>
               </div>
-
               <hr className="border-secondary" />
-
-              <p className="login-text mb-0">
-                A regisztrált felhasználók saját fiókkal rendelkeznek, ahol módosíthatják
-                személyes adataikat annak érdekében, hogy a vásárlási visszaigazolások és
-                vetítési információk megfelelően kézbesíthetők legyenek.
+              <p className="login-text mb-0 small">
+                A regisztrált adatok segítségével kapod meg a vásárlási visszaigazolásokat.
               </p>
             </div>
           </div>
         </div>
 
+        {/* Jegyek táblázat */}
         <div className="row g-4 mt-1">
           <div className="col-12">
-            <div className="login-card p-4" style={{ maxWidth: '100%' }}>
+            <div className="login-card p-4">
               <h3 className="text-white mb-4">Megvásárolt jegyek</h3>
-
               {tickets.length === 0 ? (
-                <p className="login-text mb-0">Még nincs megvásárolt jegyed.</p>
+                <p className="login-text mb-0 text-center">Még nincs megvásárolt jegyed.</p>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-dark table-bordered align-middle">
@@ -197,9 +223,6 @@ function Profile() {
                       <tr>
                         <th>Film</th>
                         <th>Dátum</th>
-                        <th>Időpont</th>
-                        <th>Terem</th>
-                        <th>Szék</th>
                         <th>Jegykód</th>
                         <th>Állapot</th>
                       </tr>
@@ -208,21 +231,10 @@ function Profile() {
                       {tickets.map((ticket) => (
                         <tr key={ticket.id}>
                           <td>{ticket.movieTitle}</td>
-                          <td>{ticket.date}</td>
-                          <td>{ticket.time}</td>
-                          <td>{ticket.hall}</td>
-                          <td>{ticket.seat}</td>
-                          <td>{ticket.code}</td>
-                          <td>
-                            <span
-                              className={
-                                ticket.status === 'Aktív'
-                                  ? 'text-success'
-                                  : 'text-warning'
-                              }
-                            >
-                              {ticket.status}
-                            </span>
+                          <td>{ticket.date} {ticket.time}</td>
+                          <td><code>{ticket.code}</code></td>
+                          <td className={ticket.status === 'Aktív' ? 'text-success' : 'text-warning'}>
+                            {ticket.status}
                           </td>
                         </tr>
                       ))}
@@ -234,7 +246,6 @@ function Profile() {
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );

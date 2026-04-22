@@ -5,10 +5,10 @@ import Footer from './footer.js';
 import { Link, useNavigate } from 'react-router-dom';
 
 
-function formatDateKey(dateString) {
+/*function formatDateKey(dateString) {
   const date = new Date(dateString);
   return date.toISOString().split('T')[0];
-}
+}*/
 
 var weeklymovies = fetch("http://localhost:5000/api/Screenings/GetWeekly")
 
