@@ -208,6 +208,7 @@ namespace JegymesterApp.Services {
                 for ( int day = 0; day < 5; day++ ) {
                     screenings.Add(new Screening {
                         MovieId = movie.Id,
+                        Price=2500,
                         RoomId = rooms[movieIndex % rooms.Count].Id, 
                         ScreeningDate = DateTime.Today.AddDays(day).AddHours(14 + movieIndex),
                         

@@ -61,6 +61,7 @@ namespace JegymesterApp.Services
                 ShopingCart = user.ShopingCart?.Select(s => new ScreeningDto {
                     Id = s.Id,
                     ScreeningDate = s.ScreeningDate,
+                    Price = s.Price,
                     RoomId = s.RoomId,
                     MovieId = s.MovieId
                     
@@ -75,6 +76,7 @@ namespace JegymesterApp.Services
                     PurchaseDate = t.PurchaseDate,
                     ScreeningId = t.ScreeningId,
                     UserId = t.UserId,
+                    Price= t.Screening.Price,
                     // Add other Ticket properties here
                 }).ToList() ?? new List<TicketDto>()
             };
