@@ -16,6 +16,7 @@ namespace JegymesterApp.DataContext.Dtos
         public int Id { get; set; }
         public int MovieId { get; set; }
         public DateTime ScreeningDate { get; set; }
+        public int Price { get; set; }
         public int RoomId { get; set; }
         public ICollection<TicketDto>? TicketDtos { get; set; } = new List<TicketDto>();
 
@@ -24,6 +25,7 @@ namespace JegymesterApp.DataContext.Dtos
     {
         public int MovieId { get; set; }
         public DateTime ScreeningDate { get; set; }
+        public int Price { get; set; }
         public int RoomId { get; set; }
     }
 }

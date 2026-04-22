@@ -34,6 +34,7 @@ namespace JegymesterApp.Services {
                 Id = screening.Id,
                 MovieId = screening.MovieId,
                 ScreeningDate = screening.ScreeningDate,
+                Price = screening.Price,
                 RoomId = screening.RoomId,
                 // Mapping the nested Tickets to TicketDtos
                 TicketDtos = screening.Tickets.Select(t => new TicketDto {
@@ -41,6 +42,7 @@ namespace JegymesterApp.Services {
                     ScreeningId = t.ScreeningId,
                     UserId = t.UserId,
                     UserName = t.User.Name,
+                    
                     Phone = t.Phone,
                     Email = t.Email,
                     PurchaseDate = t.PurchaseDate,
@@ -55,8 +57,8 @@ namespace JegymesterApp.Services {
             var screening = new Screening() {
                 MovieId = screeningCreateDto.MovieId,
                 RoomId = screeningCreateDto.RoomId,
-                ScreeningDate = screeningCreateDto.ScreeningDate
-                
+                ScreeningDate = screeningCreateDto.ScreeningDate,
+                Price = screeningCreateDto.Price
             };
             return screening;
         }
@@ -69,7 +71,7 @@ namespace JegymesterApp.Services {
                 MovieId = screeningDto.MovieId,
                 RoomId = screeningDto.RoomId,
                 ScreeningDate = screeningDto.ScreeningDate,
-                
+                Price=screeningDto.Price,
                 Tickets = screeningDto.TicketDtos?.Select(t => new Ticket() {
                     Id = t.Id,
                     Email = t.Email,

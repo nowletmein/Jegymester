@@ -63,7 +63,9 @@ namespace JegymesterApp.Services {
                   ScreeningDtos = movie.Screenings.Select(s => new ScreeningDto {
                       Id = s.Id,
                       ScreeningDate = s.ScreeningDate,
-                      RoomId = s.Room.Id
+                      RoomId = s.Room.Id,
+                      Price = s.Price,
+                      MovieId = s.Movie.Id
                   }).ToList()
               };
               return movieDto;

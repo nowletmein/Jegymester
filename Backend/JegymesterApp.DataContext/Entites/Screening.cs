@@ -9,6 +9,8 @@ namespace JegymesterApp.DataContext.Entites
         public int Id { get; set; }
         public int MovieId { get; set; }
         public Movie Movie { get; set; } //vetítéshez tartozó film
+
+        public int Price { get; set; } = 0;
         public DateTime ScreeningDate {  get; set; }
         public int RoomId { get; set; } //Create room entity
         public Room Room { get; set; }
