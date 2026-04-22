@@ -88,6 +88,7 @@ namespace JegymesterApp.Services
             }
 
             var user = MapToUser(userCreateDto);
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             if (!user.Roles.Any()) {
                 user.Roles.Add(await DefaultCustomerRoleAsync());
             }
@@ -179,6 +180,7 @@ namespace JegymesterApp.Services
 
         public async Task<int> CreateRole(RoleCreateDto roleCreateDto) {
             var role = MapToRole(roleCreateDto);
+
             await _context.Roles.AddAsync(role);
             await _context.SaveChangesAsync();
             return role.Id;
