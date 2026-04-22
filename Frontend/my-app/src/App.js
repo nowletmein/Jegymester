@@ -12,12 +12,15 @@ import Cashier from './Components/cashier';
 import Profile from './Components/profile';
 import Purchase from './Components/purchase';
 import MovieDetails from './Components/moviedetails';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   return (
+    <AuthProvider>
     <div className="App">
       
       <main>
+
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<Login />} />
@@ -32,6 +35,7 @@ function App() {
       </main>
 
     </div>
+    </AuthProvider>
   );
 }
 

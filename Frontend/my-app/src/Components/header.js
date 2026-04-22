@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { useAuth } from '../context/AuthContext';
+import { Link,useNavigate } from 'react-router-dom';
 import '../Components/style/comp.css';
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token'); 
-    if (token) {
-      setIsLoggedIn(true);
-    }
-  }, []);
+  const { user, logout } = useAuth(); // 2. Grab user and logout
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // Redirect to home after logging out
+  };
+  
 
   return (
     <header>
@@ -31,7 +31,7 @@ const Header = () => {
               </Link>
 
               <div className="d-flex align-items-center">
-                {isLoggedIn ? (
+                {!user.isGuest ? (
                   <Link to="/profile" className="nav-link">
                     <i className="fas fa-user-circle me-2"></i> Fiókom
                   </Link>

@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
+import { useAuth } from '../context/AuthContext';
+import { Link,useNavigate } from 'react-router-dom';
 
-const initialUser = {
-  fullName: 'Kiss Barbara',
-  email: 'barbara.kiss@email.com',
-  phone: '+36 30 123 4567',
-};
+
+
 
 const initialTickets = [
   {
@@ -43,6 +42,13 @@ const initialTickets = [
 ];
 
 function Profile() {
+  const { user, logout } = useAuth(); // 2. Grab user and logout
+    const navigate = useNavigate();
+    const handleLogout = () => {
+      logout();
+      navigate('/'); // Redirect to home after logging out
+    };
+
   const [userData, setUserData] = useState(initialUser);
   const [formData, setFormData] = useState(initialUser);
   const [tickets] = useState(initialTickets);
