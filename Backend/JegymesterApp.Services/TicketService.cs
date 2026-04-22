@@ -32,7 +32,8 @@ namespace JegymesterApp.Services
                 PurchaseDate = ticket.PurchaseDate,
                 ScreeningId = ticket.ScreeningId,
                 UserId = ticket.UserId,
-                UserName = ticket.User?.Name
+                UserName = ticket.User?.Name,
+                Price=ticket.Screening.Price,
             };
             return ticketDto;
         }
@@ -101,7 +102,7 @@ namespace JegymesterApp.Services
 
         public async Task<TicketDto> Get(int ticketId)
         {
-            var ticket = await _context.Tickets.FirstOrDefaultAsync(x => x.Id == ticketId);
+            var ticket = await _context.Tickets.Include(x => x.Screening).FirstOrDefaultAsync(x => x.Id == ticketId);
             if (ticket == null) {
                 throw new TicketNotFoundException($"There is no ticket with this ID: {ticketId}");
             }

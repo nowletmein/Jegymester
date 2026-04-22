@@ -9,6 +9,7 @@ namespace JegymesterApp.DataContext.Dtos
     {
         public int Id { get; set; }
         public int ScreeningId { get; set; }   
+        public int Price { get; set; }
         public int? UserId { get; set; }
         public string? UserName { get; set; }
         public string Phone { get; set; } = string.Empty;
