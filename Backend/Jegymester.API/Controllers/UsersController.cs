@@ -68,5 +68,11 @@ namespace Jegymester.API.Controllers
             var result = await _userService.AddRoleToUser(roleId, userId);
             return Ok(result);
         }
+        [HttpPost]
+        [Route("{userId}/{screeningId}")]
+        public async Task<IActionResult> AddToCart(int userId, int screeningId) {
+            var result = await _userService.AddToCart(userId, screeningId);
+            return Ok(result);
+        }
     }
 }

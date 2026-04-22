@@ -21,6 +21,7 @@ namespace JegymesterApp.Services
         Task<List<RoleDto>> GetRoles();
         Task<int> CreateRole(RoleCreateDto roleCreateDto);
         Task<int> AddRoleToUser(int roleId, int userId);
+        Task<int> AddToCart(int userId, int screeningId);
     }
     public class UserService : IUserService
     {
@@ -194,6 +195,15 @@ namespace JegymesterApp.Services
 
             user.Roles.Add(role);
             return 0;
+        }
+        public async Task<int> AddToCart(int userId, int screeningId) {
+            var screening = await _context.Screenings.FirstOrDefaultAsync(x =>x.Id == screeningId);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            if (user == null || screening == null) {
+                throw new ScreeningNotFoundException("Screening or User not found");
+            }
+            user.ShopingCart.Add(screening);
+            return screening.Id;
         }
     }
 }
