@@ -106,6 +106,21 @@
             margin-bottom: 20px;
         }
 
+	.btn-secondary {
+  	background-color: #ffffff;
+  	color: #000000;
+  	border: none;
+  	padding: 12px;
+  	font-weight: bold;
+  	text-transform: uppercase;
+  	letter-spacing: 1px;
+	}
+
+.btn-secondary-custom:hover {
+  background-color: #e6e6e6;
+  color: #000000;
+}
+
         a {
             color: var(--cc-blue);
             text-decoration: none;

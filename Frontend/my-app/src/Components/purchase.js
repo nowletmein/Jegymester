@@ -9,7 +9,6 @@ function Purchase() {
   const { movie, screening, day } = location.state || {};
 
   const [formData, setFormData] = useState({
-    userId: '',
     email: '',
     phone: '',
   });
@@ -17,6 +16,10 @@ function Purchase() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
+
+  // Később ide jöhet a loginból kiolvasott user ID
+  const loggedInUserId = null;
+  const resolvedUserId = loggedInUserId ?? 0;
 
   if (!movie || !screening) {
     return (
@@ -37,7 +40,7 @@ function Purchase() {
     );
   }
 
-  const ticketPrice = 2500;
+  const ticketPrice = Number(screening?.price ?? 0);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,7 +57,7 @@ function Purchase() {
     setMessage('');
     setIsError(false);
 
-    if (!formData.userId || !formData.email || !formData.phone) {
+    if (!formData.email || !formData.phone) {
       setMessage('Kérlek tölts ki minden mezőt.');
       setIsError(true);
       setLoading(false);
@@ -62,18 +65,22 @@ function Purchase() {
     }
 
     try {
+      const requestBody = {
+        screeningId: Number(screening.screeningId),
+        userId: resolvedUserId,
+        phone: formData.phone,
+        email: formData.email,
+      };
+
+      console.log('PURCHASE REQUEST:', requestBody);
+
       const response = await fetch('http://localhost:5000/api/Tickets/Create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           accept: '*/*',
         },
-        body: JSON.stringify({
-          screeningId: Number(screening.screeningId),
-          userId: Number(formData.userId),
-          phone: formData.phone,
-          email: formData.email,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -84,7 +91,6 @@ function Purchase() {
       setIsError(false);
 
       setFormData({
-        userId: '',
         email: '',
         phone: '',
       });
@@ -126,7 +132,12 @@ function Purchase() {
                 <strong className="text-white">Korhatár:</strong> {movie.rating}+
               </p>
               <p className="login-text mb-2">
-                <strong className="text-white">Nap:</strong> {day}
+                <strong className="text-white">Nap:</strong>{' '}
+                {day
+                  ? typeof day === 'object'
+                    ? `${day.label}, ${day.short}`
+                    : day
+                  : ''}
               </p>
               <p className="login-text mb-2">
                 <strong className="text-white">Időpont:</strong> {screening.time}
@@ -152,18 +163,6 @@ function Purchase() {
 
               <form onSubmit={handlePurchase}>
                 <div className="mb-3">
-                  <label className="form-label text-white">Felhasználó azonosító</label>
-                  <input
-                    type="number"
-                    name="userId"
-                    className="form-control"
-                    placeholder="pl. 1"
-                    value={formData.userId}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="mb-3">
                   <label className="form-label text-white">E-mail cím</label>
                   <input
                     type="email"
@@ -187,14 +186,30 @@ function Purchase() {
                   />
                 </div>
 
+	<div className="d-flex gap-2">
                 <button
                   type="submit"
-                  className="btn btn-primary w-100"
+                  className="btn btn-primary w-50"
                   disabled={loading}
                 >
                   {loading ? 'Feldolgozás...' : 'Jegy megvásárlása'}
                 </button>
+
+		<button
+  		type="submit"
+  		className="btn btn-secondary w-50"
+  			//onClick={handleAddToCart}
+		>
+  		Kosárba helyezés
+		</button>
+	</div>
               </form>
+
+              <div className="mt-4 p-3 border border-secondary rounded">
+                <p className="login-text mb-0">
+                  Bejelentkezés nélkül vendégként vásárolsz jegyet.
+                </p>
+              </div>
 
               {message && (
                 <div className="mt-4 p-3 border border-secondary rounded">
