@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useNavigate } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../Components/style/comp.css';
 import Header from './header.js';
