@@ -74,7 +74,7 @@ builder.Services.AddSwaggerGen(opt => {
         app.UseSwaggerUI();
     }
 
-    app.UseHttpsRedirection();
+    //app.UseHttpsRedirection();
 
     app.UseCors("ReactPolicy");
     app.UseAuthentication();

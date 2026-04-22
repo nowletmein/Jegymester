@@ -61,7 +61,7 @@ const Header = () => {
         <div className="container-fluid px-5">
           <div className="navbar-nav w-100 justify-content-center">
             <Link className="nav-link" to="/movies">Műsoron</Link>
-            <Link className="nav-link" to="/purchase">Ajánlatok</Link>
+            <Link className="nav-link" to="/">Ajánlatok</Link>
           </div>
         </div>
       </nav>

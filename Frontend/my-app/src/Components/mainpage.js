@@ -1,68 +1,142 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
 
+function normalizePicturePath(path) {
+  if (!path) {
+    return 'https://placehold.co/1920x1080/1a1a2e/4fc3f7?text=Film+Hatter';
+  }
+  return path.replace('/Frontend/my-app/public', '');
+}
 
 function App() {
-  const movies = [
-    { id: 4, title: 'Film Címe 1' },
-    { id: 5, title: 'Film Címe 2' },
-    { id: 6, title: 'Film Címe 3' },
-    { id: 7, title: 'Film Címe 4' },
-    { id: 8, title: 'Film Címe 5' },
-    { id: 9, title: 'Film Címe 6' },
-    { id: 10, title: 'Film Címe 7' },
-    { id: 11, title: 'Film Címe 8' },
-  ];
+  const [movies, setMovies] = useState([]);
+  const [featuredMovie, setFeaturedMovie] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/Movies/GetAll`);
+        if (!response.ok) throw new Error('Nincs adat');
+        
+        const data = await response.json();
+        const mappedData = data.map(movie => ({
+          ...movie,
+          poster: normalizePicturePath(movie.picturePath)
+        }));
+
+        setMovies(mappedData);
+
+        if (mappedData.length > 0) {
+          setFeaturedMovie(mappedData[0]); 
+        }
+      } catch (err) {
+        console.error("Hiba:", err);
+      } finally {
+        setLoading(false); 
+      }
+    };
+    fetchMovies();
+  }, []);
 
   return (
     <div className="App">
       <Header />
 
-      <main className="container main-content">
-        <div className="carousel-header mx-auto text-center py-4">
-          <h1 className="text-light">Legfrissebb megjelenések</h1>
-        </div>
+      {!loading && featuredMovie && (
+        <section className="hero-section">
+          <div 
+            className="hero-background" 
+            style={{ backgroundImage: `url(${featuredMovie.poster})` }}
+          ></div>
+          
+          <div className="hero-overlay">
+            <div className="container h-100 d-flex align-items-center">
+              <div className="row w-100">
+                <div className="col-lg-6 hero-content text-start">
+                  <span className="badge bg-primary mb-3 px-3 py-2 text-uppercase fw-bold shadow-sm">
+                    Kiemelt Ajánlat
+                  </span>
+                  
+                  <h1 className="display-1 fw-bold text-white mb-2 main-title">
+                    {featuredMovie.title}
+                  </h1>
+                  
+                  <div className="d-flex align-items-center gap-3 mb-4 info-bar">
+                    <span className="text-warning fw-bold"><i className="fas fa-star"></i> {featuredMovie.rating || '8.2'}</span>
+                    <span className="text-white-50">|</span>
+                    <span className="text-white fw-medium">{featuredMovie.length} perc</span>
+                    <span className="badge border border-secondary text-secondary">{featuredMovie.pg}+</span>
+                  </div>
 
-        <div id="carouselExampleInterval" className="carousel slide mx-auto" data-bs-ride="carousel">
-          <div className="carousel-inner">
-            <div className="carousel-item active" data-bs-interval="1000">
-              <img src="../../content_img/1.png" className="d-block w-100" style={{ height: '400px' }} alt="Slide 1" />
-            </div>
-            <div className="carousel-item" data-bs-interval="2000">
-              <img src="../../content_img/2.jpg" className="d-block w-100" style={{ height: '400px' }} alt="Slide 2" />
-            </div>
-            <div className="carousel-item">
-              <img src="../../content_img/3.png" className="d-block w-100" style={{ height: '400px' }} alt="Slide 3" />
+                  <p className="lead text-light mb-4 hero-description">
+                    {featuredMovie.description ? 
+                      (featuredMovie.description.substring(0, 200) + '...') : 
+                      'Fedezd fel a legújabb filmes élményeket nálunk!'}
+                  </p>
+
+                  <div className="d-flex gap-3">
+                    <button 
+                       className="btn btn-outline-light btn-lg px-4 glass-btn"
+                       onClick={() => navigate(`/movie/${featuredMovie.id}`)}
+                    >
+                      Részletek
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="prev">
-            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Previous</span>
-          </button>
-          <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="next">
-            <span className="carousel-control-next-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Next</span>
-          </button>
-        </div>
+        </section>
+      )}
 
-        <div className="container popular-movies my-5">
-          <h2 className="text-light mb-4 text-center">Népszerű filmek</h2>
-          <div className="row g-4 justify-content-center">
-            {movies.map(movie => (
-              <div key={movie.id} className="col-md-3">
-                <div className="card bg-dark text-white h-100">
-                  <img src={`./content_img/${movie.id}.jpg`} className="card-img-top" alt={movie.title} />
-                  <div className="card-body">
-                    <h5 className="card-title">{movie.title}</h5>
-                    <p className="card-text">Rövid leírás a filmről.</p>
+      <main className="container my-5 pt-4">
+        <div className="d-flex align-items-center justify-content-between mb-4">
+          <h2 className="text-light fw-bold section-title">Aktuális műsoron</h2>
+          <div className="title-line flex-grow-1 ms-4 d-none d-md-block"></div>
+        </div>
+        
+        {loading ? (
+          <div className="text-center text-light py-5">
+            <div className="spinner-border text-primary" role="status"></div>
+          </div>
+        ) : (
+          <div className="row g-4">
+            {movies.map((movie) => (
+              <div key={movie.id} className="col-lg-3 col-md-4 col-sm-6">
+                <div className="card bg-dark text-white h-100 popular-card border-0 shadow">
+                  <div className="card-img-container">
+                    <img 
+                      src={movie.poster} 
+                      className="card-img-top" 
+                      alt={movie.title} 
+                      style={{ height: '400px', objectFit: 'cover' }}
+                    />
+                  </div>
+                  <div className="popular-body d-flex flex-column justify-content-between p-3">
+                    <div className="text-center">
+                      <h5 className="card-title fw-bold mb-1 text-truncate">{movie.title}</h5>
+                      <p className="card-text text-secondary small mb-2">
+                        {movie.director || 'Kiemelt film'}
+                      </p>
+                    </div>
+                    
+                    <button 
+                      className="btn btn-primary mt-2 mb-1 mx-auto px-4 details-button btn-sm"
+                      onClick={() => navigate(`/movie/${movie.id}`)}
+                    >
+                      Részletek
+                    </button>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        )}
       </main>
 
       <Footer />
