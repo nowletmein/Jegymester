@@ -1,97 +1,76 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
 
-const MOVIES = [
-  {
-    id: 1,
-    title: "Dűne: Második rész",
-    genre: "Sci-Fi / Kaland",
-    duration: "166 perc",
-    rating: "16",
-    poster: "https://placehold.co/120x180/1a1a2e/4fc3f7?text=Dűne+2",
-    schedule: {
-      "2025-04-07": ["10:00", "13:30", "17:00", "20:30"],
-      "2025-04-08": ["11:00", "14:30", "18:00", "21:00"],
-      "2025-04-09": ["10:30", "14:00", "17:30"],
-      "2025-04-10": ["12:00", "16:00", "20:00"],
-      "2025-04-11": ["11:30", "15:30", "19:30"],
-    },
-  },
-  {
-    id: 2,
-    title: "Kung Fu Panda 4",
-    genre: "Animáció / Vígjáték",
-    duration: "94 perc",
-    rating: "6",
-    poster: "https://placehold.co/120x180/1a1a2e/f9a825?text=KFP4",
-    schedule: {
-      "2025-04-07": ["09:30", "12:00", "14:30"],
-      "2025-04-08": ["10:00", "12:30", "15:00"],
-      "2025-04-09": ["09:00", "11:30", "14:00", "16:30"],
-      "2025-04-10": ["10:30", "13:00", "15:30"],
-      "2025-04-11": ["09:30", "12:00"],
-    },
-  },
-  {
-    id: 3,
-    title: "Godzilla x Kong",
-    genre: "Akció / Sci-Fi",
-    duration: "115 perc",
-    rating: "12",
-    poster: "https://placehold.co/120x180/1a1a2e/e53935?text=GxK",
-    schedule: {
-      "2025-04-07": ["15:00", "18:30", "22:00"],
-      "2025-04-08": ["16:00", "19:30"],
-      "2025-04-09": ["15:30", "19:00", "22:00"],
-      "2025-04-10": ["14:00", "17:30", "21:00"],
-      "2025-04-11": ["16:30", "20:00"],
-    },
-  },
-  {
-    id: 4,
-    title: "Civil War",
-    genre: "Dráma / Thriller",
-    duration: "109 perc",
-    rating: "18",
-    poster: "https://placehold.co/120x180/1a1a2e/78909c?text=Civil+War",
-    schedule: {
-      "2025-04-07": ["20:00", "22:30"],
-      "2025-04-08": ["20:30"],
-      "2025-04-09": ["21:00"],
-      "2025-04-10": ["19:00", "21:30"],
-      "2025-04-11": ["20:30"],
-    },
-  },
-  {
-    id: 5,
-    title: "Ghostbusters: Frozen Empire",
-    genre: "Kaland / Vígjáték",
-    duration: "115 perc",
-    rating: "12",
-    poster: "https://placehold.co/120x180/1a1a2e/80cbc4?text=Ghostbusters",
-    schedule: {
-      "2025-04-07": ["11:00", "14:00"],
-      "2025-04-08": ["13:00", "16:00"],
-      "2025-04-09": ["12:30", "15:30", "18:30"],
-      "2025-04-10": ["11:30", "14:30"],
-      "2025-04-11": ["13:30", "16:30"],
-    },
-  },
-];
+function formatDateKey(dateString) {
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+}
 
-const DAYS = [
-  { date: "2025-04-07", label: "Hétfő", short: "04.07" },
-  { date: "2025-04-08", label: "Kedd", short: "04.08" },
-  { date: "2025-04-09", label: "Szerda", short: "04.09" },
-  { date: "2025-04-10", label: "Csütörtök", short: "04.10" },
-  { date: "2025-04-11", label: "Péntek", short: "04.11" },
-];
+function formatTime(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('hu-HU', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
+
+function formatDayLabel(dateString) {
+  const date = new Date(dateString);
+
+  const label = date.toLocaleDateString('hu-HU', { weekday: 'long' });
+  const short = date.toLocaleDateString('hu-HU', {
+    month: '2-digit',
+    day: '2-digit',
+  });
+
+  return {
+    date: formatDateKey(dateString),
+    label: label.charAt(0).toUpperCase() + label.slice(1),
+    short,
+  };
+}
+
+function normalizePicturePath(path) {
+  if (!path) {
+    return 'https://placehold.co/120x180/1a1a2e/4fc3f7?text=Film';
+  }
+
+  return path.replace('/Frontend/my-app/public', '');
+}
+
+function mapMovieFromApi(movie) {
+  const schedule = {};
+
+  if (movie.screeningDtos && Array.isArray(movie.screeningDtos)) {
+    movie.screeningDtos.forEach((screening) => {
+      const dayKey = formatDateKey(screening.screeningDate);
+      const time = formatTime(screening.screeningDate);
+
+      if (!schedule[dayKey]) {
+        schedule[dayKey] = [];
+      }
+
+      schedule[dayKey].push(time);
+    });
+  }
+
+  return {
+    id: movie.id,
+    title: movie.title,
+    genre: movie.director || 'Nincs megadva',
+    duration: `${movie.length} perc`,
+    rating: movie.pg,
+    poster: normalizePicturePath(movie.picturePath),
+    description: movie.description,
+    score: movie.rating,
+    schedule,
+  };
+}
 
 function TicketModal({ movie, time, day, onClose }) {
-  const dayInfo = DAYS.find((d) => d.date === day);
-
   return (
     <div
       className="modal fade show d-block"
@@ -99,16 +78,17 @@ function TicketModal({ movie, time, day, onClose }) {
       style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
       onClick={onClose}
     >
-      <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-dialog modal-dialog-centered"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-content login-card">
           <div className="modal-body text-center p-4">
             <div className="brand-logo">
               JEGY<span className="text-white">MESTER</span>
             </div>
             <h3 className="text-white mb-2">{movie.title}</h3>
-            <p className="login-text mb-2">
-              {dayInfo ? `${dayInfo.label}, ${dayInfo.short}` : ""}
-            </p>
+            <p className="login-text mb-2">{day}</p>
             <h1 className="text-primary mb-4">{time}</h1>
 
             <button className="btn btn-primary w-100 mb-2">
@@ -155,7 +135,12 @@ function MovieCard({ movie, selectedDay }) {
               <span className="badge bg-danger">
                 {movie.rating}+
               </span>
+              <span className="badge bg-secondary">
+                IMDb: {movie.score}
+              </span>
             </div>
+
+            <p className="login-text mb-2">{movie.description}</p>
 
             <div className="login-text mb-2">Vetítések</div>
 
@@ -187,9 +172,58 @@ function MovieCard({ movie, selectedDay }) {
 }
 
 function Movies() {
-  const [selectedDay, setSelectedDay] = useState(DAYS[0].date);
+  const [selectedDay, setSelectedDay] = useState('');
+  const [days, setDays] = useState([]);
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const moviesForDay = MOVIES.filter(
+  useEffect(() => {
+    const loadMovies = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/Movies/GetAll');
+
+        if (!response.ok) {
+          throw new Error('Nem sikerült lekérni a filmeket.');
+        }
+
+        const data = await response.json();
+        const mappedMovies = data.map(mapMovieFromApi);
+
+        setMovies(mappedMovies);
+
+        const allDates = [];
+
+        mappedMovies.forEach((movie) => {
+          Object.keys(movie.schedule).forEach((dateKey) => {
+            if (!allDates.includes(dateKey)) {
+              allDates.push(dateKey);
+            }
+          });
+        });
+
+        allDates.sort();
+
+        const mappedDays = allDates.map((dateKey) =>
+          formatDayLabel(`${dateKey}T00:00:00`)
+        );
+
+        setDays(mappedDays);
+
+        if (mappedDays.length > 0) {
+          setSelectedDay(mappedDays[0].date);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMovies();
+  }, []);
+
+  const moviesForDay = movies.filter(
     (movie) => (movie.schedule[selectedDay] || []).length > 0
   );
 
@@ -205,31 +239,49 @@ function Movies() {
           </p>
         </div>
 
-        <div className="d-flex flex-wrap gap-2 mb-4">
-          {DAYS.map((day) => (
-            <button
-              key={day.date}
-              className={`btn ${selectedDay === day.date ? 'btn-primary' : 'btn-outline-light'}`}
-              onClick={() => setSelectedDay(day.date)}
-            >
-              <div className="fw-bold">{day.label}</div>
-              <small>{day.short}</small>
-            </button>
-          ))}
-        </div>
-
-        {moviesForDay.length === 0 ? (
+        {loading && (
           <div className="login-card p-4 text-center">
-            <p className="login-text mb-0">Erre a napra nincs elérhető vetítés.</p>
+            <p className="login-text mb-0">Betöltés...</p>
           </div>
-        ) : (
-          moviesForDay.map((movie) => (
-            <MovieCard
-              key={movie.id}
-              movie={movie}
-              selectedDay={selectedDay}
-            />
-          ))
+        )}
+
+        {error && (
+          <div className="login-card p-4 text-center">
+            <p className="text-danger mb-0">{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            <div className="d-flex flex-wrap gap-2 mb-4">
+              {days.map((day) => (
+                <button
+                  key={day.date}
+                  className={`btn ${selectedDay === day.date ? 'btn-primary' : 'btn-outline-light'}`}
+                  onClick={() => setSelectedDay(day.date)}
+                >
+                  <div className="fw-bold">{day.label}</div>
+                  <small>{day.short}</small>
+                </button>
+              ))}
+            </div>
+
+            {moviesForDay.length === 0 ? (
+              <div className="login-card p-4 text-center">
+                <p className="login-text mb-0">
+                  Erre a napra nincs elérhető vetítés.
+                </p>
+              </div>
+            ) : (
+              moviesForDay.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  movie={movie}
+                  selectedDay={selectedDay}
+                />
+              ))
+            )}
+          </>
         )}
       </main>
 
