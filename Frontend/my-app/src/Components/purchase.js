@@ -1,9 +1,101 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
 
 function Purchase() {
+  const location = useLocation();
+  const { movie, screening, day } = location.state || {};
+
+  const [formData, setFormData] = useState({
+    userId: '',
+    email: '',
+    phone: '',
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
+
+  if (!movie || !screening) {
+    return (
+      <>
+        <Header />
+
+        <main className="container py-5">
+          <div className="login-card p-4 text-center" style={{ maxWidth: '100%' }}>
+            <h1 className="text-white fw-bold mb-3">Jegyvásárlás</h1>
+            <p className="login-text mb-0">
+              Nincs kiválasztott vetítés. Kérlek térj vissza a műsor oldalra.
+            </p>
+          </div>
+        </main>
+
+        <Footer />
+      </>
+    );
+  }
+
+  const ticketPrice = 2500;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePurchase = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    setIsError(false);
+
+    if (!formData.userId || !formData.email || !formData.phone) {
+      setMessage('Kérlek tölts ki minden mezőt.');
+      setIsError(true);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/Tickets/Create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          accept: '*/*',
+        },
+        body: JSON.stringify({
+          screeningId: Number(screening.screeningId),
+          userId: Number(formData.userId),
+          phone: formData.phone,
+          email: formData.email,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('A jegyvásárlás nem sikerült.');
+      }
+
+      setMessage('A jegyvásárlás sikeresen megtörtént.');
+      setIsError(false);
+
+      setFormData({
+        userId: '',
+        email: '',
+        phone: '',
+      });
+    } catch (error) {
+      setMessage(error.message || 'Hiba történt a vásárlás során.');
+      setIsError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -12,7 +104,7 @@ function Purchase() {
         <div className="mb-4">
           <h1 className="text-white fw-bold">Jegyvásárlás</h1>
           <p className="login-text mb-0">
-            Ez egy bemutató oldal a jegyvásárlási folyamat szemléltetésére.
+            Vásárlás előtt ellenőrizd az adatokat.
           </p>
         </div>
 
@@ -22,31 +114,34 @@ function Purchase() {
               <h3 className="text-white mb-4">Kiválasztott vetítés</h3>
 
               <p className="login-text mb-2">
-                <strong className="text-white">Film:</strong> Dűne: Második rész
+                <strong className="text-white">Film:</strong> {movie.title}
               </p>
               <p className="login-text mb-2">
-                <strong className="text-white">Műfaj:</strong> Sci-Fi / Kaland
+                <strong className="text-white">Rendező:</strong> {movie.genre}
               </p>
               <p className="login-text mb-2">
-                <strong className="text-white">Játékidő:</strong> 166 perc
+                <strong className="text-white">Játékidő:</strong> {movie.duration}
               </p>
               <p className="login-text mb-2">
-                <strong className="text-white">Korhatár:</strong> 16+
+                <strong className="text-white">Korhatár:</strong> {movie.rating}+
               </p>
               <p className="login-text mb-2">
-                <strong className="text-white">Nap:</strong> Hétfő, 04.07
+                <strong className="text-white">Nap:</strong> {day}
+              </p>
+              <p className="login-text mb-2">
+                <strong className="text-white">Időpont:</strong> {screening.time}
               </p>
               <p className="login-text mb-3">
-                <strong className="text-white">Időpont:</strong> 17:00
+                <strong className="text-white">Terem:</strong> {screening.roomId}
               </p>
 
               <hr className="border-secondary" />
 
               <p className="login-text mb-2">
-                <strong className="text-white">Jegyár:</strong> 2500 Ft / fő
+                <strong className="text-white">Jegyár:</strong> {ticketPrice} Ft
               </p>
               <p className="login-text mb-0">
-                <strong className="text-white">Fizetendő:</strong> 5000 Ft
+                <strong className="text-white">Vetítés azonosító:</strong> {screening.screeningId}
               </p>
             </div>
           </div>
@@ -55,13 +150,16 @@ function Purchase() {
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>
               <h3 className="text-white mb-4">Vásárlási adatok</h3>
 
-              <form onSubmit={(e) => e.preventDefault()}>
+              <form onSubmit={handlePurchase}>
                 <div className="mb-3">
-                  <label className="form-label text-white">Teljes név</label>
+                  <label className="form-label text-white">Felhasználó azonosító</label>
                   <input
-                    type="text"
+                    type="number"
+                    name="userId"
                     className="form-control"
-                    placeholder="Vásárló neve"
+                    placeholder="pl. 1"
+                    value={formData.userId}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -69,8 +167,11 @@ function Purchase() {
                   <label className="form-label text-white">E-mail cím</label>
                   <input
                     type="email"
+                    name="email"
                     className="form-control"
                     placeholder="pelda@email.com"
+                    value={formData.email}
+                    onChange={handleChange}
                   />
                 </div>
 
@@ -78,39 +179,30 @@ function Purchase() {
                   <label className="form-label text-white">Telefonszám</label>
                   <input
                     type="text"
+                    name="phone"
                     className="form-control"
                     placeholder="+36 30 123 4567"
+                    value={formData.phone}
+                    onChange={handleChange}
                   />
                 </div>
 
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label text-white">Darabszám</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="2"
-                    />
-                  </div>
-
-                  <div className="col-md-6 mb-3">
-                    <label className="form-label text-white">Szék(ek)</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="pl. A10, A11"
-                    />
-                  </div>
-                </div>
-
-                <button type="button" className="btn btn-primary w-100">
-                  Jegy megvásárlása
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={loading}
+                >
+                  {loading ? 'Feldolgozás...' : 'Jegy megvásárlása'}
                 </button>
               </form>
 
-              <div className="mt-4 p-3 border border-secondary rounded">
-                
-              </div>
+              {message && (
+                <div className="mt-4 p-3 border border-secondary rounded">
+                  <p className={`mb-0 ${isError ? 'text-danger' : 'text-success'}`}>
+                    {message}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

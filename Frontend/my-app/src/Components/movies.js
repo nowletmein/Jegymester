@@ -2,10 +2,22 @@ import React, { useEffect, useState } from 'react';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
+import { Link, useNavigate } from 'react-router-dom';
 
-function formatDateKey(dateString) {
+/*function formatDateKey(dateString) {
   const date = new Date(dateString);
   return date.toISOString().split('T')[0];
+}*/
+
+//El volt csúszva egy nappal hátrafelé, így ezt módosítottam
+function formatDateKey(dateString) {
+  const date = new Date(dateString);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 }
 
 function formatTime(dateString) {
@@ -53,7 +65,12 @@ function mapMovieFromApi(movie) {
         schedule[dayKey] = [];
       }
 
-      schedule[dayKey].push(time);
+      schedule[dayKey].push({
+        screeningId: screening.id,
+        time: time,
+        roomId: screening.roomId,
+        screeningDate: screening.screeningDate,
+      });
     });
   }
 
@@ -70,7 +87,19 @@ function mapMovieFromApi(movie) {
   };
 }
 
-function TicketModal({ movie, time, day, onClose }) {
+function TicketModal({ movie, screening, day, onClose }) {
+  const navigate = useNavigate();
+
+  const handlePurchaseClick = () => {
+    navigate('/purchase', {
+      state: {
+        movie: movie,
+        screening: screening,
+        day: day,
+      },
+    });
+  };
+
   return (
     <div
       className="modal fade show d-block"
@@ -87,13 +116,18 @@ function TicketModal({ movie, time, day, onClose }) {
             <div className="brand-logo">
               JEGY<span className="text-white">MESTER</span>
             </div>
+
             <h3 className="text-white mb-2">{movie.title}</h3>
             <p className="login-text mb-2">{day}</p>
-            <h1 className="text-primary mb-4">{time}</h1>
+            <h1 className="text-primary mb-4">{screening.time}</h1>
 
-            <button className="btn btn-primary w-100 mb-2">
+            <button
+              className="btn btn-primary w-100 mb-2"
+              onClick={handlePurchaseClick}
+            >
               Jegy vásárlása
             </button>
+
             <button className="btn btn-outline-light w-100" onClick={onClose}>
               Bezárás
             </button>
@@ -104,22 +138,29 @@ function TicketModal({ movie, time, day, onClose }) {
   );
 }
 
+
+
+
+
+
 function MovieCard({ movie, selectedDay }) {
   const [modal, setModal] = useState(null);
-  const times = movie.schedule[selectedDay] || [];
+  const screenings = movie.schedule[selectedDay] || [];
 
-  if (times.length === 0) return null;
+  if (screenings.length === 0) return null;
 
   return (
     <>
       <div className="login-card p-3 mb-4" style={{ maxWidth: '100%' }}>
         <div className="row g-3 align-items-center">
           <div className="col-md-2 col-sm-3">
-            <img
-              src={movie.poster}
-              alt={movie.title}
-              className="img-fluid rounded"
-            />
+		<Link to={`/movie/${movie.id}`}>
+            	<img
+              	src={movie.poster}
+              	alt={movie.title}
+              	className="img-fluid rounded"
+            	/>
+		</Link>
           </div>
 
           <div className="col-md-10 col-sm-9">
@@ -145,13 +186,13 @@ function MovieCard({ movie, selectedDay }) {
             <div className="login-text mb-2">Vetítések</div>
 
             <div className="d-flex flex-wrap gap-2">
-              {times.map((time) => (
+              {screenings.map((screening) => (
                 <button
-                  key={time}
+                  key={screening.screeningId}
                   className="btn btn-primary"
-                  onClick={() => setModal(time)}
+                  onClick={() => setModal(screening)}
                 >
-                  {time}
+                  {screening.time}
                 </button>
               ))}
             </div>
@@ -162,7 +203,7 @@ function MovieCard({ movie, selectedDay }) {
       {modal && (
         <TicketModal
           movie={movie}
-          time={modal}
+          screening={modal}
           day={selectedDay}
           onClose={() => setModal(null)}
         />
@@ -170,6 +211,19 @@ function MovieCard({ movie, selectedDay }) {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function Movies() {
   const [selectedDay, setSelectedDay] = useState('');
