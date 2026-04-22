@@ -4,6 +4,8 @@ import Header from './header.js';
 import Footer from './footer.js';
 
 const RegisterPage = () => {
+  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Regisztrációs adatok feldolgozása...");

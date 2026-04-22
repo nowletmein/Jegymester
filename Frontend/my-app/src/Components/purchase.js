@@ -3,8 +3,15 @@ import { useLocation } from 'react-router-dom';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
+import { useAuth } from '../context/AuthContext';
 
 function Purchase() {
+  const { user, logout } = useAuth(); // 2. Grab user and logout
+    const navigate = useNavigate();
+    const handleLogout = () => {
+      logout();
+      navigate('/'); // Redirect to home after logging out
+    };
   const location = useLocation();
   const { movie, screening, day } = location.state || {};
 
@@ -67,7 +74,8 @@ function Purchase() {
     try {
       const requestBody = {
         screeningId: Number(screening.screeningId),
-        userId: resolvedUserId,
+        
+        userId: (user.id > 0) ? user.id : null,
         phone: formData.phone,
         email: formData.email,
       };
