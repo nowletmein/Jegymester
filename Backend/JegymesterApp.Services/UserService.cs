@@ -22,6 +22,7 @@ namespace JegymesterApp.Services
         Task<int> CreateRole(RoleCreateDto roleCreateDto);
         Task<int> AddRoleToUser(int roleId, int userId);
         Task<int> AddToCart(int userId, int screeningId);
+        Task<int> RemoveFromCart(int userId, int screeningId);
     }
     public class UserService : IUserService
     {
@@ -203,7 +204,22 @@ namespace JegymesterApp.Services
                 throw new ScreeningNotFoundException("Screening or User not found");
             }
             user.ShopingCart.Add(screening);
+            await _context.SaveChangesAsync();
             return screening.Id;
+        }
+        public async Task<int> RemoveFromCart(int userId, int screeningId) {
+            var user = await _context.Users.Include(x => x.ShopingCart).FirstOrDefaultAsync(x => x.Id == userId);
+            if (user == null) {
+                throw new UserNotFoundException("User dooes not exists With this id:"+userId);
+            }
+            var screening = user.ShopingCart.FirstOrDefault(x => x.Id == screeningId);
+            if (screening == null || user == null) {
+                throw new ScreeningNotFoundException("Screening with this Id doesent exist in this users cart Id:" + screeningId);
+            }
+            user.ShopingCart.Remove(screening);
+            await _context.SaveChangesAsync();
+            return screening.Id;
+
         }
     }
 }

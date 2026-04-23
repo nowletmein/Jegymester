@@ -43,12 +43,12 @@ namespace Jegymester.API.Controllers
         }
         [HttpPatch]
         [Route("{Id}")]
-        public async Task<IActionResult> Edit(int Id, [FromBody]UserEditDto userEditDto) {
+        public async Task<IActionResult> Edit(int Id, [FromBody] UserEditDto userEditDto) {
             var result = await _userService.Edit(Id, userEditDto);
             return Ok(result);
         }
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody]UserCreateDto userCreateDto) {
+        public async Task<IActionResult> Login([FromBody] UserCreateDto userCreateDto) {
             var result = await _userService.Login(userCreateDto.Email, userCreateDto.Password);
             return Ok(result);
         }
@@ -58,7 +58,7 @@ namespace Jegymester.API.Controllers
             return Ok(result);
         }
         [HttpPut]
-        public async Task<IActionResult> CreateRole([FromBody]RoleCreateDto roleCreateDto) {
+        public async Task<IActionResult> CreateRole([FromBody] RoleCreateDto roleCreateDto) {
             var result = _userService.CreateRole(roleCreateDto);
             return Ok(result);
         }
@@ -72,6 +72,12 @@ namespace Jegymester.API.Controllers
         [Route("{userId}/{screeningId}")]
         public async Task<IActionResult> AddToCart(int userId, int screeningId) {
             var result = await _userService.AddToCart(userId, screeningId);
+            return Ok(result);
+        }
+        [HttpDelete]
+        [Route("{userId}/{screeningId}")]
+        public async Task<IActionResult> RemoveFromCart(int userId, int screeningId){
+            var result = await _userService.RemoveFromCart(userId, screeningId);
             return Ok(result);
         }
     }
