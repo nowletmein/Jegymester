@@ -98,7 +98,10 @@ function TicketModal({ movie, screening, day, onClose }) {
     navigate('/purchase', {
       state: {
         movie: movie,
-        screening: screening,
+        screening: {
+          ...screening,
+          date: screening.screeningDate // ADDED THIS FOR THE DATE
+        },
         day: day,
       },
     });
@@ -158,13 +161,13 @@ function MovieCard({ movie, selectedDay }) {
       <div className="login-card p-3 mb-4" style={{ maxWidth: '100%' }}>
         <div className="row g-3 align-items-center">
           <div className="col-md-2 col-sm-3">
-		<Link to={`/movie/${movie.id}`}>
-            	<img
-              	src={movie.poster}
-              	alt={movie.title}
-              	className="img-fluid rounded"
-            	/>
-		</Link>
+    <Link to={`/movie/${movie.id}`}>
+              <img
+                src={movie.poster}
+                alt={movie.title}
+                className="img-fluid rounded"
+              />
+    </Link>
           </div>
 
           <div className="col-md-10 col-sm-9">

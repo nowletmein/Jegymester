@@ -9,8 +9,18 @@ function Purchase() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { movie, screening, day } = location.state || {};
+  const { movie, screening } = location.state || {};
 
+  // Formatted date logic
+  const formattedDate = screening?.date 
+  ? new Date(screening.date).toLocaleDateString('hu-HU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    })
+  : 'Nincs megadva';
+  
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
@@ -75,7 +85,8 @@ function Purchase() {
       const requestBody = {
         screeningId: Number(screening.screeningId),
         userId: (!user.isGuest) ? user.id : null,
-        name: (user.name == null) ? user.name:null,
+        // Fixed: Ensure the user's name is actually passed when logged in
+        name: user.isGuest ? "Vendég" : user.name, 
         phone: finalPhone,
         email: finalEmail,
       };
@@ -98,6 +109,29 @@ function Purchase() {
     }
   };
 
+  // Logic for the Add to Cart button
+  const handleAddToCart = async () => {
+    if (user.isGuest) {
+        alert("A kosár funkció használatához kérjük jelentkezzen be!");
+        return;
+    }
+    
+    try {
+        const response = await fetch(`http://localhost:5000/api/Users/AddToCart/${user.id}/${screening.screeningId}`, {
+            method: 'POST',
+            headers: { 'accept': '*/*' }
+        });
+
+        if (response.ok) {
+            alert("Sikeresen a kosárhoz adva!");
+        } else {
+            alert("Hiba történt a kosárba helyezéskor.");
+        }
+    } catch (error) {
+        console.error("Hiba:", error);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -109,10 +143,10 @@ function Purchase() {
 
         <div className="row g-4">
           <div className="col-lg-5">
-            {/* ... Selected screening info (No changes needed here) ... */}
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>
                <h3 className="text-white mb-4">Kiválasztott vetítés</h3>
                <p className="login-text mb-2"><strong className="text-white">Film:</strong> {movie.title}</p>
+               <p className="login-text mb-2"><strong className="text-white">Dátum:</strong> {formattedDate}</p>
                <p className="login-text mb-2"><strong className="text-white">Időpont:</strong> {screening.time}</p>
                <p className="login-text mb-2"><strong className="text-white">Jegyár:</strong> {ticketPrice} Ft</p>
             </div>
@@ -123,7 +157,6 @@ function Purchase() {
               <h3 className="text-white mb-4">Vásárlási adatok</h3>
 
               <form onSubmit={handlePurchase}>
-                {/* 3. Conditional Rendering: Show fields only if Guest */}
                 {user.isGuest ? (
                   <>
                     <div className="mb-3">
@@ -152,7 +185,6 @@ function Purchase() {
                     </div>
                   </>
                 ) : (
-                  /* 4. Show summary for logged in users */
                   <div className="mb-4 p-3 bg-dark border border-secondary rounded">
                     <p className="text-white mb-1"><strong>Név:</strong> {user.name}</p>
                     <p className="text-white mb-1"><strong>E-mail:</strong> {user.email}</p>
@@ -165,11 +197,12 @@ function Purchase() {
                   <button type="submit" className="btn btn-primary w-50" disabled={loading}>
                     {loading ? 'Feldolgozás...' : 'Jegy megvásárlása'}
                   </button>
-                  <button type="button" className="btn btn-secondary w-50">Kosárba helyezés</button>
+                  <button type="button" className="btn btn-secondary w-50" onClick={handleAddToCart}>
+                    Kosárba helyezés
+                  </button>
                 </div>
               </form>
 
-              {/* 5. Show different footer based on status */}
               <div className="mt-4 p-3 border border-secondary rounded">
                 <p className="login-text mb-0">
                   {user.isGuest 
