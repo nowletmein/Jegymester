@@ -54,12 +54,12 @@ namespace Jegymester.API.Controllers
         }
         [HttpGet]
         public async Task<IActionResult> GetRoles() {
-            var result = _userService.GetRoles();
+            var result = await _userService.GetRoles();
             return Ok(result);
         }
         [HttpPut]
         public async Task<IActionResult> CreateRole([FromBody] RoleCreateDto roleCreateDto) {
-            var result = _userService.CreateRole(roleCreateDto);
+            var result = await _userService.CreateRole(roleCreateDto);
             return Ok(result);
         }
         [HttpPut]
@@ -78,6 +78,17 @@ namespace Jegymester.API.Controllers
         [Route("{userId}/{screeningId}")]
         public async Task<IActionResult> RemoveFromCart(int userId, int screeningId){
             var result = await _userService.RemoveFromCart(userId, screeningId);
+            return Ok(result);
+        }
+        [HttpGet]
+        [Route("{Id}")]
+        public async Task<IActionResult> GetShopingCart(int userId) {
+            var result = await _userService.GetShopingCart(userId);
+            return Ok(result);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetTickets(int userId) { 
+            var result = await _userService.GetTickets(userId);
             return Ok(result);
         }
     }

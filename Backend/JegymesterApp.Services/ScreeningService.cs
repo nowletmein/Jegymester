@@ -19,6 +19,8 @@ namespace JegymesterApp.Services
         Task<int> Delete(int Id);
         Task<ScreeningDto> Edit(int Id, ScreeningCreateDto screeningCreateDto);
         Task<int> AddTestData();
+        Task<List<ScreeningDto>> GetRoomUnavailableScreenings();
+        Task<List<SeatDto>> GetSeats(int Id);
     }
     public class ScreeningService : IScreeningService {
         private readonly JegymesterDbContext _context;
@@ -62,6 +64,15 @@ namespace JegymesterApp.Services
                 Price = screeningCreateDto.Price
             };
             return screening;
+        }
+        public SeatDto MapToSeatDto(Seat seat) {
+            var seatDto = new SeatDto() {
+                Id = seat.Id,
+                isTaken=seat.isTaken,
+                RoomId=seat.RoomId,
+                SeatNumber = seat.SeatNumber
+            };
+            return seatDto;
         }
         public Screening MapToScreening(ScreeningDto screeningDto) {
             
@@ -224,6 +235,32 @@ namespace JegymesterApp.Services
             return await _context.SaveChangesAsync();
         }
 
+        public async Task<List<ScreeningDto>> GetRoomUnavailableScreenings() {
+            var screenings = await _context.Screenings.Where(x => x.Room.Available == false).ToListAsync();
+            var screeningsDto = new List<ScreeningDto>();
+
+            if(screenings == null ) {  return screeningsDto; }
+
+            foreach ( var screening in screenings ) {
+                screeningsDto.Add(MapToScreeningDto( screening ));
+            }
+            return screeningsDto;
+            
+        }
+
+        public async Task<List<SeatDto>> GetSeats(int Id) {
+            var screening = await _context.Screenings.Include(x => x.Room).ThenInclude(x => x.Seats).FirstOrDefaultAsync(x => x.Id == Id);
+            if(screening == null ) {
+                throw new ScreeningNotFoundException("screening not found");
+            }
+            var seats = screening.Room.Seats.ToList();
+            var seatsDto = new List<SeatDto>();
+            foreach ( var seat in seats ) {
+                seatsDto.Add(MapToSeatDto(seat));
+            }
+
+            return seatsDto;
+        }
     }
 }
 

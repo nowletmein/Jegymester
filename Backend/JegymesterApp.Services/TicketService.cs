@@ -28,6 +28,8 @@ namespace JegymesterApp.Services
                 Email = ticket.Email,
                 IsCancelled = ticket.IsCancelled,
                 IsVerified = ticket.IsVerified,
+                RoomName=ticket.Screening.Room.Name,
+                SeatNumber=ticket.SeatNumber,
                 Phone = ticket.Phone,
                 PurchaseDate = ticket.PurchaseDate,
                 ScreeningId = ticket.ScreeningId,
@@ -40,6 +42,7 @@ namespace JegymesterApp.Services
         public Ticket MapToTicket(TicketDto ticketDto) {
             var ticket = new Ticket() {
                 Id = ticketDto.Id,
+                SeatNumber=ticketDto.SeatNumber,
                 Email = ticketDto.Email,
                 IsCancelled =ticketDto.IsCancelled,
                 IsVerified=ticketDto.IsVerified,
@@ -68,9 +71,15 @@ namespace JegymesterApp.Services
                 Phone = ticketCreateDto.Phone,
                 Email = ticketCreateDto.Email,
                 PurchaseDate = DateTime.Now,
-                
+                SeatNumber = ticketCreateDto.SeatNumber
 
             };
+            var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber);
+
+            if (seat == null || seat.isTaken == true ) {
+                throw new SeatNotAvailableException("Seat not available");
+            }
+
             await _context.Tickets.AddAsync(ticket);
             await _context.SaveChangesAsync();
             /*

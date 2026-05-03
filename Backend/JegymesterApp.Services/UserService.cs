@@ -8,21 +8,28 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using BCrypt.Net;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using System.Globalization;
 
 namespace JegymesterApp.Services
 {
     public interface IUserService
     {
-        Task<UserDto> Register(UserCreateDto userCreateDto);
+        Task<string> Register(UserCreateDto userCreateDto);
         Task<UserDto> Get(int userId);
         Task<int> Delete(int userId);
         Task<int> Edit(int userId, UserEditDto userCreateDto);
-        Task<UserDto> Login(string email, string password);
+        Task<string> Login(string email, string password);
         Task<List<RoleDto>> GetRoles();
         Task<int> CreateRole(RoleCreateDto roleCreateDto);
         Task<int> AddRoleToUser(int roleId, int userId);
         Task<int> AddToCart(int userId, int screeningId);
         Task<int> RemoveFromCart(int userId, int screeningId);
+        Task<List<TicketDto>> GetTickets(int userId);
+        Task<List<ScreeningDto>> GetShopingCart(int userId);
+
     }
     public class UserService : IUserService
     {
@@ -83,7 +90,31 @@ namespace JegymesterApp.Services
                 }).ToList() ?? new List<TicketDto>()
             };
         }
-        public async Task<UserDto> Register(UserCreateDto userCreateDto)
+        public async Task<string> GenerateToken(User user) {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecretKeyThatIsAtLeast32CharactersLong!!ADDSFHsfgsdgksgkaowaefagnamfaklfaijg"));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expires = DateTime.Now.AddDays(Convert.ToDouble(5));
+            var id = await GetClaimnsIdentity(user);
+            var token = new JwtSecurityToken("https://localhost:5000", "https://localhost:3000", id.Claims, expires:expires, signingCredentials:creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        public async Task<ClaimsIdentity> GetClaimnsIdentity(User user) {
+            var claims = new List<Claim> {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.MobilePhone, user.Phone),
+                new Claim(ClaimTypes.Sid, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.AuthTime, DateTime.Now.ToString(CultureInfo.InvariantCulture))
+            };
+            if ( user.Roles != null && user.Roles.Any() ) {
+                claims.AddRange(user.Roles.Select(x => new Claim("roleIds", Convert.ToString(x.Id))));
+                claims.AddRange(user.Roles.Select(x => new Claim(ClaimTypes.Role, x.Name)));
+            }
+            return new ClaimsIdentity(claims, "Token");      
+        }
+        public async Task<string> Register(UserCreateDto userCreateDto)
         {
             if(await _context.Users.AnyAsync(x => x.Email == userCreateDto.Email)) {
                 throw new UserAlreadyExistsException("User with this email adress already existis");
@@ -96,7 +127,7 @@ namespace JegymesterApp.Services
             }
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-            return MapToUserDto(user);
+            return await Login(user.Email, user.Password);
         }
 
         public async Task<int> Delete(int userId)
@@ -154,13 +185,14 @@ namespace JegymesterApp.Services
             
         }
 
-        public async Task<UserDto> Login(string email, string password)
+        public async Task<string> Login(string email, string password)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password)) {
                 throw new UserNotFoundException("Bad email or password");
             }
-            return MapToUserDto(user);
+            //return MapToUserDto(user);
+            return await GenerateToken(user);
         }
         private async Task<Role> DefaultCustomerRoleAsync() {
             var UserRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
@@ -173,11 +205,13 @@ namespace JegymesterApp.Services
         }
         public async Task<List<RoleDto>> GetRoles() {
             var roles = await _context.Roles.ToListAsync();
-            var roleDto = new List<RoleDto>();
+            var rolesDto = new List<RoleDto>();
+            var roleDto = new RoleDto();
             foreach (var role in roles) {
-                roleDto.Add(MapToRoleDto(role));
+                 roleDto = MapToRoleDto(role);
+                rolesDto.Add(roleDto);
             }
-            return roleDto;
+            return rolesDto;
         }
 
         public async Task<int> CreateRole(RoleCreateDto roleCreateDto) {
@@ -220,6 +254,24 @@ namespace JegymesterApp.Services
             await _context.SaveChangesAsync();
             return screening.Id;
 
+        }
+        public async Task<List<ScreeningDto>> GetShopingCart(int userId) {
+            var user = await _context.Users.Include(x => x.ShopingCart).FirstOrDefaultAsync(x => x.Id ==userId);
+
+            if ( user == null ) {
+                throw new UserNotFoundException("User Not Found");
+            }
+            var userDto = MapToUserDto(user);
+            return userDto.ShopingCart.ToList();
+        }
+        public async Task<List<TicketDto>> GetTickets(int userId) {
+            var user = await _context.Users.Include(x => x.Tickets).FirstOrDefaultAsync(x => x.Id == userId);
+
+            if ( user == null ) {
+                throw new UserNotFoundException("User Not Found");
+            }
+            var userDto = MapToUserDto(user);
+            return userDto.Tickets.ToList();
         }
     }
 }

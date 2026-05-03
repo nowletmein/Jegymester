@@ -12,6 +12,8 @@ namespace JegymesterApp.DataContext.Dtos
         public int Price { get; set; }
         public int? UserId { get; set; }
         public string? UserName { get; set; }
+        public string RoomName { get; set; }
+        public int SeatNumber { get; set; }
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public DateTime PurchaseDate { get; set; }
@@ -22,6 +24,8 @@ namespace JegymesterApp.DataContext.Dtos
     {
         public int ScreeningId { get; set; }
         public int? UserId { get; set; }
+
+        public int SeatNumber { get; set; }
         
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

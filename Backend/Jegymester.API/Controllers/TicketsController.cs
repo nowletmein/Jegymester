@@ -20,6 +20,7 @@ namespace Jegymester.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TicketCreateDto ticketCreateDto) {
             var result = await _ticketService.Create(ticketCreateDto);
+            //TODO check if seat awailable and if we have space
             return Ok(result);
         }
 

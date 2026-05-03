@@ -60,6 +60,19 @@ namespace Jegymester.API.Controllers
             var result = await _screeningService.AddTestData();
             return Ok(result);
         }
+        //TODO SCREENING CHECK ENDPOINT IF ROOM IS AVAILABLE
+        //TODO SCREENING GET ALL SEAT
+        [HttpGet]
+        public async Task<IActionResult> GetRoomUnavailableScreenings() {
+            var result = await _screeningService.GetRoomUnavailableScreenings();
+            return Ok(result);
+        }
 
+        [HttpGet]
+        [Route("{Id}")]
+        public async Task<IActionResult> GetSeats(int Id) {  
+            var result = await _screeningService.GetSeats(Id);
+            return Ok(result);
+        }
     }
 }

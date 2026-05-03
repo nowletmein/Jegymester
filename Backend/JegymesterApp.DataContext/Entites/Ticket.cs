@@ -15,6 +15,8 @@ namespace JegymesterApp.DataContext.Entites
         [ForeignKey("UserId")]
         public User? User { get; set; }
         public string Phone { get; set; }
+
+        public int SeatNumber { get; set; }
         public string Email { get; set; }
         public DateTime PurchaseDate { get; set; }
         public bool IsCancelled { get; set; } = false;
