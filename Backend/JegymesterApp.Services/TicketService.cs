@@ -74,12 +74,12 @@ namespace JegymesterApp.Services
                 SeatNumber = ticketCreateDto.SeatNumber
 
             };
-            var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber);
+            var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber && x.RoomId == ticket.Screening.RoomId);
 
             if (seat == null || seat.isTaken == true ) {
                 throw new SeatNotAvailableException("Seat not available");
             }
-
+            seat.isTaken = true;
             await _context.Tickets.AddAsync(ticket);
             await _context.SaveChangesAsync();
             /*
@@ -149,7 +149,11 @@ namespace JegymesterApp.Services
             {
                 throw new InvalidOperationException("Már nem lehet a jegyet lemondani");
             }
-
+            var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber && x.RoomId == ticket.Screening.RoomId);
+            if ( seat == null ) {
+                throw new InvalidOperationException("This Ticket does not contain a Seat");
+            }
+            seat.isTaken = false;
             ticket.IsCancelled = true;
             await _context.SaveChangesAsync();
             return ticket.Id;
