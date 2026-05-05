@@ -1,6 +1,7 @@
 ﻿using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.Services;
 using JegymesterApp.Services.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace Jegymester.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize]
     public class ScreeningsController:ControllerBase
     {
         private readonly IScreeningService _screeningService;
@@ -19,6 +21,7 @@ namespace Jegymester.API.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
          public async Task<IActionResult> GetWeekly()
          {
              return Ok(await _screeningService.GetWeekly()); 
@@ -26,6 +29,7 @@ namespace Jegymester.API.Controllers
         
         [HttpGet]
         [Route("{Id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(int Id) 
         {
              var result = await _screeningService.Get(Id);
@@ -34,6 +38,7 @@ namespace Jegymester.API.Controllers
 
         [HttpDelete]
         [Route("{Id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int Id)
         {   
              var result = await _screeningService.Delete(Id);
@@ -42,6 +47,7 @@ namespace Jegymester.API.Controllers
 
         [HttpPut]
         [Route("{Id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int Id, [FromBody] ScreeningCreateDto screeningCreateDto)
         {
             var result = await _screeningService.Edit(Id, screeningCreateDto);
@@ -49,6 +55,7 @@ namespace Jegymester.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] ScreeningCreateDto screeningCreateDto)
         {
             var result = await _screeningService.Create(screeningCreateDto);
@@ -56,6 +63,7 @@ namespace Jegymester.API.Controllers
             
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddTestData() {
             var result = await _screeningService.AddTestData();
             return Ok(result);
@@ -63,6 +71,7 @@ namespace Jegymester.API.Controllers
         //TODO SCREENING CHECK ENDPOINT IF ROOM IS AVAILABLE
         //TODO SCREENING GET ALL SEAT
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetRoomUnavailableScreenings() {
             var result = await _screeningService.GetRoomUnavailableScreenings();
             return Ok(result);
@@ -70,6 +79,7 @@ namespace Jegymester.API.Controllers
 
         [HttpGet]
         [Route("{Id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSeats(int Id) {  
             var result = await _screeningService.GetSeats(Id);
             return Ok(result);

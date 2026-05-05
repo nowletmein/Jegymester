@@ -1,5 +1,6 @@
 ﻿using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Text;
 namespace Jegymester.API.Controllers {
     [ApiController]
     [Route("api/[controller]/[action]")]
+    [Authorize(Roles = "Admin")]
     public class RoomController : ControllerBase  {
         private readonly IRoomService _roomService;
 

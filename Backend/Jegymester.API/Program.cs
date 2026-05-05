@@ -1,7 +1,8 @@
 using JegymesterApp.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
+
+using Microsoft.OpenApi.Models;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using JegymesterApp.DataContext.Context;
@@ -34,40 +35,56 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+            ValidIssuer = "http://localhost:5000",
+            ValidAudience = "http://localhost:3000",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("MySuperSecretKeyThatIsAtLeast32CharactersLong!!ADDSFHsfgsdgksgkaowaefagnamfaklfaijg")),
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role,
+            NameClaimType = System.Security.Claims.ClaimTypes.Name,
+            ClockSkew = TimeSpan.Zero
+        };
+        options.Events = new JwtBearerEvents {
+            OnAuthenticationFailed = context => {
+                Console.WriteLine("Authentication failed: " + context.Exception.Message);
+                return Task.CompletedTask;
+            }
         };
     });
 
 builder.Services.AddAuthorization();
 
 builder.Services.AddSwaggerGen(opt => {
-    opt.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo { Title = "Jegymester API", Version = "v1" });
+    opt.SwaggerDoc("v1", new OpenApiInfo {
+        Title = "Jegymester API",
+        Version = "v1"
+    });
 
-    
-    var securityScheme = new Microsoft.OpenApi.OpenApiSecurityScheme {
-        Name = "JWT Authentication",
-        Description = "Enter your JWT token",
-        In = Microsoft.OpenApi.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.SecuritySchemeType.Http,
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
         Scheme = "bearer",
-        BearerFormat = "JWT"
-    };
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter JWT token"
+    });
 
-    opt.AddSecurityDefinition("Bearer", securityScheme);
-
-    opt.AddSecurityRequirement(doc => new Microsoft.OpenApi.OpenApiSecurityRequirement
+    opt.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer"),
-            new List<string>()
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
         }
     });
 });
 
 
-    var app = builder.Build();
+var app = builder.Build();
 
     
     if (app.Environment.IsDevelopment()) {

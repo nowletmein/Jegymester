@@ -12,7 +12,7 @@ namespace JegymesterApp.Services
         Task<int> Verify(int ticketId);
         Task<TicketDto> Get(int ticketId);
         Task<int> Delete(int ticketId);
-        Task<int> Cancel(int ticketId);
+        Task<int> Cancel(int ticketId, int? userId);
     }
     public class TicketService : ITicketService
     {
@@ -137,11 +137,17 @@ namespace JegymesterApp.Services
             return ticket.Id;
         }
 
-        public async Task<int> Cancel(int ticketId)
+        public async Task<int> Cancel(int ticketId, int? userId)
         {
             var ticket = await _context.Tickets.Include(x => x.Screening).FirstOrDefaultAsync(x => x.Id == ticketId);
+            
             if (ticket == null) { 
                 throw new TicketNotFoundException("No ticket with this id found");
+            }
+            if (userId != null) {
+                if (ticket.UserId != userId) {
+                    throw new TicketNotFoundException("This user doesent have a ticket with this Id Y cant delete other users tickets");
+                }
             }
             var timeUntilScreening = ticket.Screening.ScreeningDate - DateTime.Now;
 

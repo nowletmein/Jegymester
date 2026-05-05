@@ -63,7 +63,7 @@ namespace JegymesterApp.Services {
         }
         public async Task<int> AddTestData() {
             // 1. Check if data already exists to avoid duplicates
-            if ( await _context.Rooms.AnyAsync() ) return 0;
+            if ( await _context.Rooms.AnyAsync(x => x.Name == "IMAX Theater") ) return 0;
 
             var rooms = new List<Room>
             {

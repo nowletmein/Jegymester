@@ -95,7 +95,7 @@ namespace JegymesterApp.Services
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expires = DateTime.Now.AddDays(Convert.ToDouble(5));
             var id = await GetClaimnsIdentity(user);
-            var token = new JwtSecurityToken("https://localhost:5000", "https://localhost:3000", id.Claims, expires:expires, signingCredentials:creds);
+            var token = new JwtSecurityToken("http://localhost:5000", "http://localhost:3000", id.Claims, expires:expires, signingCredentials:creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
@@ -187,7 +187,7 @@ namespace JegymesterApp.Services
 
         public async Task<string> Login(string email, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+            var user = await _context.Users.Include(x => x.Roles).FirstOrDefaultAsync(x => x.Email == email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password)) {
                 throw new UserNotFoundException("Bad email or password");
             }
@@ -229,6 +229,7 @@ namespace JegymesterApp.Services
             }
 
             user.Roles.Add(role);
+            await _context.SaveChangesAsync();
             return 0;
         }
         public async Task<int> AddToCart(int userId, int screeningId) {

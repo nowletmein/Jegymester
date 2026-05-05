@@ -6,6 +6,7 @@ using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.DataContext.Entites;
 using JegymesterApp.Services;
 using JegymesterApp.Services.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +15,7 @@ namespace Jegymester.API.Controllers {
 
     [ApiController]
     [Route("api/[controller]/[action]")]
-
+    [Authorize]
     public class MoviesController : ControllerBase {
         private readonly IMovieService _movieService;
         public MoviesController(IMovieService movieService) {
@@ -23,6 +24,7 @@ namespace Jegymester.API.Controllers {
 
         // GET: api/Movies   egy listába vissza adja az összes tárolt filmet
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll() {
             var movies = await _movieService.GetAll();
             return Ok(movies);
@@ -30,6 +32,7 @@ namespace Jegymester.API.Controllers {
         // GET: api/TodoItems/5
         // <snippet_GetByID>
         [HttpGet]
+        [AllowAnonymous]
         [Route("{movieId}")]
         public async Task<IActionResult> Get(int movieId) {
             var movie = await _movieService.Get(movieId);
@@ -38,6 +41,7 @@ namespace Jegymester.API.Controllers {
         }
         //TODO Movie adatok változtatása | Movie létrehozás | Movie törlés
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] MovieCreateDto movieCreateDto) {
              var result = await _movieService.Create(movieCreateDto);
              return Ok(result);
@@ -45,6 +49,7 @@ namespace Jegymester.API.Controllers {
 
         [HttpDelete]
         [Route("{movieId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int movieId) {
             var result = await _movieService.Delete(movieId);
             return Ok(result);
@@ -52,11 +57,13 @@ namespace Jegymester.API.Controllers {
 
         [HttpPut]
         [Route("{movieId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit([FromBody] MovieCreateDto movieCreateDto, int movieId) {
             var result = await _movieService.Edit(movieCreateDto, movieId);
             return Ok(result);
         }
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AddTestData() {
             var result = await _movieService.AddTestData();
             return Ok(result);
