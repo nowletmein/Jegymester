@@ -59,6 +59,7 @@ namespace Jegymester.API.Controllers
         
         [HttpPost]
         [Route("{screeningId}/{uEmail}/{uPhone}/{seatNumber}")]
+        [Authorize(Roles ="Cashier")]
         public async Task<IActionResult> CashierCreate(int screeningId, string uEmail, string uPhone, int seatNumber) {
             var result = await _ticketService.CashierCreate(screeningId, uEmail, uPhone, seatNumber);
             return Ok(result);

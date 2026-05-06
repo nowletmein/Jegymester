@@ -38,10 +38,11 @@ namespace JegymesterApp.Services
             var screeningDto = new ScreeningDto() {
                 Id = screening.Id,
                 MovieId = screening.MovieId,
+                // Optional: Add MovieTitle to the ScreeningDto itself if needed
+                MovieTitle = screening.Movie?.Title ?? "Ismeretlen",
                 ScreeningDate = screening.ScreeningDate,
                 Price = screening.Price,
                 RoomId = screening.RoomId,
-                // Mapping the nested Tickets to TicketDtos
                 TicketDtos = screening.Tickets?.Select(t => new TicketDto {
                     Id = t.Id,
                     ScreeningId = t.ScreeningId,
@@ -51,7 +52,10 @@ namespace JegymesterApp.Services
                     Email = t.Email,
                     PurchaseDate = t.PurchaseDate,
                     IsCancelled = t.IsCancelled,
-                    IsVerified = t.IsVerified
+                    IsVerified = t.IsVerified,
+                    SeatNumber = t.SeatNumber,
+                    // Use the screening object already passed in to avoid null references
+                    MovieTitle = screening.Movie?.Title ?? "Ismeretlen"
                 }).ToList() ?? new List<TicketDto>()
             };
             return screeningDto;
