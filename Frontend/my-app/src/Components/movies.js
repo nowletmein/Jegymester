@@ -11,7 +11,6 @@ import { Link, useNavigate } from 'react-router-dom';
 }*/
 
 
-var weeklymovies = fetch("http://localhost:5000/api/Screenings/GetWeekly")
 
 //El volt csúszva egy nappal hátrafelé, így ezt módosítottam
 function formatDateKey(dateString) {
@@ -74,6 +73,7 @@ function mapMovieFromApi(movie) {
         time: time,
         roomId: screening.roomId,
         screeningDate: screening.screeningDate,
+	price: screening.price,
       });
     });
   }
@@ -94,18 +94,36 @@ function mapMovieFromApi(movie) {
 function TicketModal({ movie, screening, day, onClose }) {
   const navigate = useNavigate();
 
-  const handlePurchaseClick = () => {
+  const handlePurchaseClick = async () => {
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/Screenings/Get/${screening.screeningId}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Nem sikerült lekérni a vetítés adatait.');
+    }
+
+    const fullScreening = await response.json();
+
     navigate('/purchase', {
       state: {
-        movie: movie,
+        movie,
         screening: {
           ...screening,
-          date: screening.screeningDate // ADDED THIS FOR THE DATE
+          price: fullScreening.price,
+          date: fullScreening.screeningDate,
+          screeningDate: fullScreening.screeningDate,
+          roomId: fullScreening.roomId,
         },
-        day: day,
+        day,
       },
     });
-  };
+  } catch (error) {
+    console.error(error);
+    alert('Nem sikerült megnyitni a jegyvásárlást.');
+  }
+};
 
   return (
     <div

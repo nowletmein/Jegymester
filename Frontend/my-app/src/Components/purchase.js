@@ -5,11 +5,23 @@ import Header from './header.js';
 import Footer from './footer.js';
 import { useAuth } from '../context/AuthContext';
 
+//székfoglalás próbálkozás
+import SeatSelection from './seatselection.js';
+
+
+
 function Purchase() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { movie, screening } = location.state || {};
+
+
+
+//székfoglaláshoz
+const [selectedSeats, setSelectedSeats] = useState([]);
+
+
 
   // Formatted date logic
   const formattedDate = screening?.date 
@@ -64,6 +76,9 @@ function Purchase() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+
+
+
   const handlePurchase = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -74,32 +89,43 @@ function Purchase() {
     const finalEmail = user.isGuest ? formData.email : user.email;
     const finalPhone = user.isGuest ? formData.phone : user.phone;
 
-    if (!finalEmail || !finalPhone) {
-      setMessage('Kérlek tölts ki minden mezőt.');
+    if (!finalEmail || !finalPhone || selectedSeats.length === 0) {
+      setMessage('Kérlek tölts ki minden mezőt és válassz egy ülőhelyet.');
       setIsError(true);
       setLoading(false);
       return;
     }
 
     try {
-      const requestBody = {
-        screeningId: Number(screening.screeningId),
-        userId: (!user.isGuest) ? user.id : null,
-        // Fixed: Ensure the user's name is actually passed when logged in
-        name: user.isGuest ? "Vendég" : user.name, 
-        phone: finalPhone,
-        email: finalEmail,
-      };
+      for (const seat of selectedSeats) {
+  const requestBody = {
+    screeningId: Number(screening.screeningId),
+    userId: user.isGuest ? 0 : Number(user.id),
+    seatNumber: Number(seat.seatNumber),
+    phone: finalPhone,
+    email: finalEmail,
+  };
 
-      const response = await fetch('http://localhost:5000/api/Tickets/Create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', accept: '*/*' },
-        body: JSON.stringify(requestBody),
-      });
+  const response = await fetch('http://localhost:5000/api/Tickets/Create', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      accept: '*/*',
+    },
+    body: JSON.stringify(requestBody),
+  });
 
-      if (!response.ok) throw new Error('A jegyvásárlás nem sikerült.');
+  if (!response.ok) {
+    throw new Error(`A jegyvásárlás nem sikerült ennél a széknél: ${seat.seatNumber}`);
+  }
+}
 
       setMessage('A jegyvásárlás sikeresen megtörtént.');
+	
+
+	//foglaláshoz
+	setSelectedSeats([]);	
+
       if (user.isGuest) setFormData({ email: '', phone: '' });
     } catch (error) {
       setMessage(error.message || 'Hiba történt a vásárlás során.');
@@ -108,6 +134,12 @@ function Purchase() {
       setLoading(false);
     }
   };
+
+
+
+
+
+
 
   // Logic for the Add to Cart button
   const handleAddToCart = async () => {
@@ -141,6 +173,19 @@ function Purchase() {
           <p className="login-text mb-0">Vásárlás előtt ellenőrizd az adatokat.</p>
         </div>
 
+
+
+<SeatSelection
+  screeningId={screening.screeningId}
+  ticketPrice={ticketPrice}
+  maxSelectable={4}
+  onSelectionChange={setSelectedSeats}
+/>
+
+
+
+
+
         <div className="row g-4">
           <div className="col-lg-5">
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>
@@ -148,9 +193,18 @@ function Purchase() {
                <p className="login-text mb-2"><strong className="text-white">Film:</strong> {movie.title}</p>
                <p className="login-text mb-2"><strong className="text-white">Dátum:</strong> {formattedDate}</p>
                <p className="login-text mb-2"><strong className="text-white">Időpont:</strong> {screening.time}</p>
-               <p className="login-text mb-2"><strong className="text-white">Jegyár:</strong> {ticketPrice} Ft</p>
+               {/*<p className="login-text mb-2"><strong className="text-white">Jegyár:</strong> {ticketPrice} Ft</p>*/}
             </div>
           </div>
+
+
+
+
+
+
+
+
+
 
           <div className="col-lg-7">
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>

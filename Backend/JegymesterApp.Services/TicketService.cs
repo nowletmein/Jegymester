@@ -74,7 +74,19 @@ namespace JegymesterApp.Services
                 SeatNumber = ticketCreateDto.SeatNumber
 
             };
-            var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber && x.RoomId == ticket.Screening.RoomId);
+            //var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber && x.RoomId == ticket.Screening.RoomId);
+            //var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber && x.RoomId == ticketCreateDto.RoomId);
+
+
+            var screening = await _context.Screenings.FirstOrDefaultAsync(s => s.Id == ticketCreateDto.ScreeningId);
+
+            if (screening == null) throw new Exception("Screening not found");
+
+            var seat = await _context.Seats.FirstOrDefaultAsync(x => x.SeatNumber == ticket.SeatNumber && x.RoomId == screening.RoomId);
+
+
+
+
 
             if (seat == null || seat.isTaken == true ) {
                 throw new SeatNotAvailableException("Seat not available");
