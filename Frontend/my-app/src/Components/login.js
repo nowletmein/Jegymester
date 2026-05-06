@@ -44,10 +44,9 @@ const Login = () => {
     // 1. JAVÍTÁS: Nyers szövegként (text) olvassuk be a tokent JSON helyett!
     const token = await response.text();
     
-    // 2. JAVÍTÁS: Egy objektumba csomagolva adjuk át a login függvénynek, 
-    // így az AuthContext továbbra is be tudja állítani a user.token értéket.
-    login({ token: token }); 
-    
+    const cleanToken = token.startsWith('"') ? JSON.parse(token) : token;
+
+    login(cleanToken); 
     navigate('/'); 
   } catch (err) {
     setError(err.message);

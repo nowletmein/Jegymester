@@ -1,76 +1,88 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 
-// 1. Create the Context
 const AuthContext = createContext(null);
 
-// 2. Define the initial Guest state
 const guestUser = {
   id: 0,
   name: 'Vendég',
   email: '',
   phone: '',
-  shopingCart: [],
-  tickets: [],
+  roles: [],
   isGuest: true 
 };
 
-// 3. The Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(guestUser);
+  const [token, setToken] = useState(localStorage.getItem('jegymester_token'));
 
-  // Load user from localStorage on startup
   useEffect(() => {
-    const savedUser = localStorage.getItem('jegymester_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      
+      const isExpired = decoded.exp * 1000 < Date.now();
+      if (isExpired) {
+        logout();
+      } else {
+        // Map the long XML Schema keys to clean property names
+        setUser({
+          id: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
+          name: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
+          email: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"],
+          phone: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/mobilephone"],
+          roles: decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || [],
+          sid: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/sid"],
+          isGuest: false
+        });
+      }
+    } catch (error) {
+      console.error("Invalid token:", error);
+      logout();
     }
-  }, []);
+  }
+}, [token]);
 
-  const login = (userData) => {
-    const loggedInUser = { ...userData, isGuest: false };
-    setUser(loggedInUser);
-    localStorage.setItem('jegymester_user', JSON.stringify(loggedInUser));
+  const login = (jwtToken) => {
+    localStorage.setItem('jegymester_token', jwtToken);
+    setToken(jwtToken);
   };
 
   const logout = () => {
+    localStorage.removeItem('jegymester_token');
+    setToken(null);
     setUser(guestUser);
-    localStorage.removeItem('jegymester_user');
   };
 
-  // 4. Refresh function to pull latest data (tickets, etc.) from API
   const refreshUser = async () => {
-  if (!user || user.isGuest || !user.id) return;
+  if (!token || user.isGuest) return;
 
   try {
-    const response = await fetch(`http://localhost:5000/api/Users/Get/${user.id}`);
+    // Note: URL is now just /Get (or /GetByToken depending on your routing)
+    // because the backend pulls the ID from the Bearer token
+    const response = await fetch(`http://localhost:5000/api/Users/Get`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
     if (response.ok) {
       const freshData = await response.json();
-      
-      // --- LOGGING START ---
-      console.log("🔄 API REFRESH TRIGGERED");
-      console.log("Previous State was Guest?", user.isGuest);
-      console.log("Incoming shopingCart:", freshData.shopingCart);
-      console.log("Incoming tickets count:", freshData.tickets?.length || 0);
-      // --- LOGGING END ---
-
-      const updatedUser = { ...freshData, isGuest: false };
-      
-      setUser(updatedUser);
-      localStorage.setItem('jegymester_user', JSON.stringify(updatedUser));
+      // Keep your local state synced with fresh data from DB
+      setUser(prev => ({ ...prev, ...freshData, isGuest: false }));
     }
   } catch (error) {
-    console.error("Nem sikerült frissíteni a felhasználót:", error);
+    console.error("Nem sikerült frissíteni:", error);
   }
 };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// 5. THE MISSING HOOK: Export useAuth so other components can find it
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
@@ -6,8 +6,12 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 function Profile() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, token, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
+
+  const [cartItems, setCartItems] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   const [userData, setUserData] = useState({
     fullName: user?.name || 'Vendég',
@@ -23,67 +27,82 @@ function Profile() {
 
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user && !user.isGuest && user.id !== 0) {
-      refreshUser();
+  const fetchExtraData = useCallback(async () => {
+    if (!token) return;
+    
+    setLoadingData(true);
+    try {
+      const headers = { 
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+      };
+      
+      const [cartRes, ticketRes] = await Promise.all([
+        fetch('http://localhost:5000/api/Users/GetShopingCart', { headers }),
+        fetch('http://localhost:5000/api/Users/GetTickets', { headers })
+      ]);
+
+      if (cartRes.ok) {
+        const cartData = await cartRes.json();
+        setCartItems(cartData);
+      }
+
+      if (ticketRes.ok) {
+        const ticketData = await ticketRes.json();
+        setTickets(ticketData);
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+    } finally {
+      setLoadingData(false);
     }
-  }, [user?.id]); 
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchExtraData();
+    }
+  }, [token, fetchExtraData]);
 
   useEffect(() => {
     if (user && !user.isGuest) {
-      const initialData = {
+      const updatedInfo = {
         fullName: user.name || '',
         email: user.email || '',
         phone: user.phone || ''
       };
-      setUserData(initialData);
-      setFormData(initialData);
+      setUserData(updatedInfo);
+      setFormData(updatedInfo);
     }
   }, [user]);
 
-  // --- ELTÁVOLÍTÁS A KOSÁRBÓL ---
   const handleRemoveFromCart = async (screeningId) => {
     if (!window.confirm("Biztosan el akarod távolítani a kosárból?")) return;
     
     try {
-      // Itt a screeningId-t küldjük, amit lentebb az item.id-ból nyerünk ki
-      const response = await fetch(`http://localhost:5000/api/Users/RemoveFromCart/${user.id}/${screeningId}`, {
+      const response = await fetch(`http://localhost:5000/api/Users/RemoveFromCart/${screeningId}`, {
         method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (response.ok) {
-        refreshUser(); 
-      } else {
-        alert("Hiba történt az eltávolítás során.");
+        fetchExtraData();
       }
     } catch (error) {
-      console.error("Hálózati hiba:", error);
+      console.error("Hiba:", error);
     }
-  };
-
-  const tickets = user?.tickets || user?.Tickets || [];
-  const cartItems = user?.shopingCart || []; 
-  const activeTickets = tickets.filter((t) => !t.isVerified && !t.isCancelled).length;
-  const usedTickets = tickets.filter((t) => t.isVerified).length;
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-    alert('Sikeresen kijelentkezett a fiókjából!');
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/Users/Edit/${user.id}`, {
+      const response = await fetch(`http://localhost:5000/api/Users/Edit`, {
         method: 'PATCH', 
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           name: formData.fullName,
           email: formData.email,
@@ -94,14 +113,20 @@ function Profile() {
       if (response.ok) {
         alert('Profil sikeresen frissítve!');
         refreshUser(); 
-      } else {
-        alert('Hiba történt a mentés során.');
       }
     } catch (error) {
-      console.error('Hálózati hiba:', error);
+      console.error('Hiba:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const activeTickets = tickets.filter((t) => !t.isVerified && !t.isCancelled).length;
+  const usedTickets = tickets.filter((t) => t.isVerified).length;
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   if (!user || user.isGuest) {
@@ -122,7 +147,7 @@ function Profile() {
             <h1 className="text-white fw-bold">Felhasználói fiók</h1>
             <p className="login-text mb-0">Üdvözlünk, {userData.fullName}!</p>
           </div>
-          <button className="btn btn-outline-danger" onClick={handleLogout}>Kijelentkezés</button>
+          <button className="btn btn-outline-danger" onClick={() => { logout(); navigate('/'); }}>Kijelentkezés</button>
         </div>
 
         <div className="row g-4 mb-4">
@@ -173,7 +198,9 @@ function Profile() {
           <div className="col-lg-7">
             <div className="login-card p-4 mb-4">
               <h3 className="text-white mb-4">Kosár tartalma</h3>
-              {cartItems.length === 0 ? (
+              {loadingData ? (
+                <p className="text-white text-center">Betöltés...</p>
+              ) : cartItems.length === 0 ? (
                 <p className="login-text mb-0 text-center py-3">A kosarad jelenleg üres.</p>
               ) : (
                 <div className="table-responsive">
@@ -187,8 +214,6 @@ function Profile() {
                     </thead>
                     <tbody>
                       {cartItems.map((item, idx) => {
-                        // A JSON-öd alapján az azonosító az 'id' mezőben van
-                        const sId = item.id;
                         const dateObj = item.screeningDate ? new Date(item.screeningDate) : null;
                         const extractedTime = dateObj ? dateObj.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : "N/A";
                         const extractedDate = dateObj ? dateObj.toLocaleDateString('hu-HU') : "";
@@ -196,7 +221,10 @@ function Profile() {
 
                         return (
                           <tr key={idx}>
-                            <td>{item.movieName || `Film ID: ${item.movieId}`}</td>
+                            <td>
+                              <div className="fw-bold">{item.movieTitle || "Ismeretlen film"}</div>
+                              <small className="text-muted">{extractedDate} {extractedTime}</small>
+                            </td>
                             <td>{item.price || 0} Ft</td>
                             <td>
                               <div className="d-flex gap-2">
@@ -204,14 +232,9 @@ function Profile() {
                                   className="btn btn-sm btn-primary flex-grow-1"
                                   onClick={() => navigate('/purchase', {
                                     state: {
-                                      movie: {
-                                        title: item.movieName || "Film",
-                                        genre: "Nincs megadva",
-                                        duration: "N/A",
-                                        rating: "12"
-                                      },
+                                      movie: { title: item.movieTitle || "Film" },
                                       screening: {
-                                        screeningId: sId,
+                                        screeningId: item.id,
                                         time: extractedTime,
                                         roomId: item.roomId,
                                         date: item.screeningDate
@@ -222,13 +245,7 @@ function Profile() {
                                 >
                                   Vásárlás
                                 </button>
-                                <button 
-                                  className="btn btn-sm btn-outline-danger"
-                                  onClick={() => handleRemoveFromCart(sId)}
-                                  title="Eltávolítás"
-                                >
-                                  🗑️
-                                </button>
+                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveFromCart(item.id)}>🗑️</button>
                               </div>
                             </td>
                           </tr>
@@ -239,55 +256,39 @@ function Profile() {
                 </div>
               )}
             </div>
-
-            <div className="login-card p-4">
-              <h3 className="text-white mb-4">Fiókadatok</h3>
-              <div className="mb-3">
-                <p className="login-text mb-2"><strong className="text-white">Név:</strong> {userData.fullName}</p>
-                <p className="login-text mb-2"><strong className="text-white">E-mail:</strong> {userData.email}</p>
-                <p className="login-text mb-0"><strong className="text-white">Telefon:</strong> {userData.phone}</p>
-              </div>
-            </div>
           </div>
         </div>
 
         <div className="row g-4 mt-1">
           <div className="col-12">
-  <div className="login-card p-4 w-100" style={{ maxWidth: "1200px", margin: "0 auto" }}>
+            <div className="login-card p-4 w-100">
               <h3 className="text-white mb-4">Megvásárolt jegyek</h3>
-              {tickets.length === 0 ? (
+              {loadingData ? (
+                <p className="text-white text-center">Betöltés...</p>
+              ) : tickets.length === 0 ? (
                 <p className="login-text mb-0 text-center">Még nincs megvásárolt jegyed.</p>
               ) : (
                 <div className="table-responsive">
                   <table className="table table-dark table-bordered align-middle">
                     <thead>
                       <tr>
-                        <th>Azonosító</th>
-                        <th>Vásárlás dátuma</th>
+                        <th>Film</th>
+                        <th>Dátum</th>
                         <th>Ár</th>
                         <th>Állapot</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {tickets.map((ticket) => {
-                        let statusText = "Aktív";
-                        let statusClass = "text-success";
-                        if (ticket.isCancelled) {
-                          statusText = "Visszaváltva";
-                          statusClass = "text-danger";
-                        } else if (ticket.isVerified) {
-                          statusText = "Felhasznált";
-                          statusClass = "text-warning";
-                        }
-                        return (
-                          <tr key={ticket.id}>
-                            <td>#{ticket.id}</td>
-                            <td>{ticket.purchaseDate ? new Date(ticket.purchaseDate).toLocaleDateString('hu-HU') : 'N/A'}</td>
-                            <td>{ticket.price || 0} Ft</td>
-                            <td className={statusClass}>{statusText}</td>
-                          </tr>
-                        );
-                      })}
+                      {tickets.map((ticket) => (
+                        <tr key={ticket.movieTitle}>
+                          <td>#{ticket.movieTitle}</td>
+                          <td>{new Date(ticket.purchaseDate).toLocaleDateString('hu-HU')}</td>
+                          <td>{ticket.price} Ft</td>
+                          <td className={ticket.isCancelled ? "text-danger" : ticket.isVerified ? "text-warning" : "text-success"}>
+                            {ticket.isCancelled ? "Visszaváltva" : ticket.isVerified ? "Felhasznált" : "Aktív"}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
