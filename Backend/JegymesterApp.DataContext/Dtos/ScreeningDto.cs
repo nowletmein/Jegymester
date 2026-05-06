@@ -18,6 +18,7 @@ namespace JegymesterApp.DataContext.Dtos
         public DateTime ScreeningDate { get; set; }
         public int Price { get; set; }
         public int RoomId { get; set; }
+        public string? MovieTitle { get; set; }
         public ICollection<TicketDto>? TicketDtos { get; set; } = new List<TicketDto>();
 
     }
