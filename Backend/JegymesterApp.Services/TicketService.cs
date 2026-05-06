@@ -13,6 +13,7 @@ namespace JegymesterApp.Services
         Task<TicketDto> Get(int ticketId);
         Task<int> Delete(int ticketId);
         Task<int> Cancel(int ticketId, int? userId);
+        Task<int> CashierCreate(int screeningId, string uEmail, string uPhone, int seatNumber);
     }
     public class TicketService : ITicketService
     {
@@ -173,6 +174,38 @@ namespace JegymesterApp.Services
             }
             seat.isTaken = false;
             ticket.IsCancelled = true;
+            await _context.SaveChangesAsync();
+            return ticket.Id;
+        }
+        public async Task<int> CashierCreate(int screeningId, string uEmail, string uPhone, int seatNumber) {
+            var screening = await _context.Screenings.FirstOrDefaultAsync(s => s.Id == screeningId);
+            if (screening == null) {
+                throw new ScreeningNotFoundException("A keresett vetítés nem található.");
+            }
+
+            var isSeatTaken = await _context.Tickets.AnyAsync(t =>
+                t.ScreeningId == screeningId &&
+                t.SeatNumber == seatNumber &&
+                !t.IsCancelled);
+
+            if (isSeatTaken) {
+                throw new Exception("Ez a szék már foglalt!");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == uEmail);
+
+            var ticket = new Ticket() {
+                Email = uEmail,
+                Phone = uPhone,
+                SeatNumber = seatNumber,
+                ScreeningId = screeningId,
+                UserId = user?.Id,
+                IsCancelled = false,
+                IsVerified = true,
+                PurchaseDate = DateTime.Now
+            };
+
+            await _context.Tickets.AddAsync(ticket);
             await _context.SaveChangesAsync();
             return ticket.Id;
         }

@@ -56,6 +56,13 @@ namespace Jegymester.API.Controllers
             var result = await _ticketService.Cancel(ticketId, userId);
             return Ok(result);
         }
+        
+        [HttpPost]
+        [Route("{screeningId}/{uEmail}/{uPhone}/{seatNumber}")]
+        public async Task<IActionResult> CashierCreate(int screeningId, string uEmail, string uPhone, int seatNumber) {
+            var result = await _ticketService.CashierCreate(screeningId, uEmail, uPhone, seatNumber);
+            return Ok(result);
+        }
         [HttpPatch]
         [Route("{ticketId}")]
         [Authorize(Roles = "Admin,Cashier")]
