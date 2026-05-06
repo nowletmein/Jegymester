@@ -126,10 +126,11 @@ namespace JegymesterApp.Services
             var endOfWeek = startOfWeek.AddDays(7);
             var screenings = await _context.Screenings
             .Where(s => s.ScreeningDate >= startOfWeek && s.ScreeningDate < endOfWeek)
-            .Include(s => s.Tickets) 
+            .Include(s => s.Movie)   // THIS WAS MISSING
+            .Include(s => s.Tickets)
             .ToListAsync();
 
-           
+
             return screenings
             .GroupBy(s => s.ScreeningDate.DayOfWeek)
             // Sunday is 0 in C#, the end (7) to keep Monday (1) first
