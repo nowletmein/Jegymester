@@ -41,10 +41,12 @@ const Login = () => {
       throw new Error('Hibás e-mail cím vagy jelszó!');
     }
 
-    const userData = await response.json();
+    // 1. JAVÍTÁS: Nyers szövegként (text) olvassuk be a tokent JSON helyett!
+    const token = await response.text();
     
-    // login() comes from useAuth() and saves the UserDto globally
-    login(userData); 
+    // 2. JAVÍTÁS: Egy objektumba csomagolva adjuk át a login függvénynek, 
+    // így az AuthContext továbbra is be tudja állítani a user.token értéket.
+    login({ token: token }); 
     
     navigate('/'); 
   } catch (err) {
