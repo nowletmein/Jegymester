@@ -1,6 +1,7 @@
 ﻿using JegymesterApp.DataContext.Context;
 using JegymesterApp.DataContext.Dtos;
 using JegymesterApp.DataContext.Entites;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace JegymesterApp.Services {
         Task<RoomDto> Edit(int Id, RoomDto roomDto);
         Task<Boolean> SetAvailablility(int Id);
         Task<int> AddTestData();
+        Task<int> FillRoomWithSeats(int seatNum, int roomId);
     }
     public class RoomService : IRoomService {
 
@@ -177,6 +179,21 @@ namespace JegymesterApp.Services {
             room.Available = !room.Available;
             await _context.SaveChangesAsync();
             return room.Available;
+        }
+        public async Task<int> FillRoomWithSeats(int seatNum, int roomId) {
+            var seatsToAdd = new List<Seat>();
+
+            for (int i = 1; i <= seatNum; i++) {
+                var seat = new Seat {
+                    SeatNumber = i,
+                    RoomId = roomId,
+                    isTaken = false
+                };
+                seatsToAdd.Add(seat);
+            }
+
+            _context.Seats.AddRange(seatsToAdd);
+            return await _context.SaveChangesAsync();
         }
     }
 }

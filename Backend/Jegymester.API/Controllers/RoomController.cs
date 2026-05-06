@@ -32,6 +32,11 @@ namespace Jegymester.API.Controllers {
             var result = await _roomService.Create(roomDto);
             return Ok(result);
         }
+        [HttpPost]
+        public async Task<IActionResult> FillRoomWithSeats(int seatNum, int roomId) {
+            var result = await _roomService.FillRoomWithSeats(seatNum, roomId);
+            return Ok(result);
+        }
         [HttpDelete]
         public async Task<IActionResult> Delete(int Id) {
             var result = await _roomService.Delete(Id);
