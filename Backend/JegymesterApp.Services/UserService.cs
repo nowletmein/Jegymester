@@ -66,14 +66,14 @@ namespace JegymesterApp.Services
                 Email = user.Email,
                 Phone = user.Phone,
 
-                // Map the collections
                 ShopingCart = user.ShopingCart?.Select(s => new ScreeningDto {
                     Id = s.Id,
                     ScreeningDate = s.ScreeningDate,
                     Price = s.Price,
                     RoomId = s.RoomId,
-                    MovieId = s.MovieId
-                    
+                    MovieId = s.MovieId,
+                    // Use ?. to prevent crash if Movie is null
+                    MovieTitle = s.Movie?.Title ?? "Ismeretlen film",
                 }).ToList() ?? new List<ScreeningDto>(),
 
                 Tickets = user.Tickets?.Select(t => new TicketDto {
@@ -81,12 +81,13 @@ namespace JegymesterApp.Services
                     Email = t.Email,
                     Phone = t.Phone,
                     IsCancelled = t.IsCancelled,
-                    IsVerified  = t.IsVerified,
+                    IsVerified = t.IsVerified,
                     PurchaseDate = t.PurchaseDate,
                     ScreeningId = t.ScreeningId,
                     UserId = t.UserId,
+                    // Deep null check for Ticket -> Screening -> Movie
+                    MovieTitle = t.Screening?.Movie?.Title ?? "Ismeretlen film",
                     Price = t.Screening?.Price ?? 0,
-                    // Add other Ticket properties here
                 }).ToList() ?? new List<TicketDto>()
             };
         }
@@ -177,7 +178,10 @@ namespace JegymesterApp.Services
 
         public async Task<UserDto> Get(int userId)
         {
-            var user = await _context.Users.Include(x => x.Tickets).Include(x => x.ShopingCart).FirstOrDefaultAsync(x =>x.Id == userId);
+            var user = await _context.Users
+            .Include(x => x.ShopingCart)
+            .ThenInclude(s => s.Movie) // This is the vital part!
+            .FirstOrDefaultAsync(x => x.Id == userId);
             if (user == null) {
                 throw new UserNotFoundException("User not found with Id:" + userId);
             }
@@ -257,7 +261,7 @@ namespace JegymesterApp.Services
 
         }
         public async Task<List<ScreeningDto>> GetShopingCart(int userId) {
-            var user = await _context.Users.Include(x => x.ShopingCart).FirstOrDefaultAsync(x => x.Id ==userId);
+            var user = await _context.Users.Include(x => x.ShopingCart).ThenInclude(x => x.Movie).FirstOrDefaultAsync(x => x.Id ==userId);
 
             if ( user == null ) {
                 throw new UserNotFoundException("User Not Found");
@@ -266,7 +270,7 @@ namespace JegymesterApp.Services
             return userDto.ShopingCart.ToList();
         }
         public async Task<List<TicketDto>> GetTickets(int userId) {
-            var user = await _context.Users.Include(x => x.Tickets).FirstOrDefaultAsync(x => x.Id == userId);
+            var user = await _context.Users.Include(x => x.Tickets).ThenInclude(x => x.Screening).ThenInclude(x => x.Movie).FirstOrDefaultAsync(x => x.Id == userId);
 
             if ( user == null ) {
                 throw new UserNotFoundException("User Not Found");

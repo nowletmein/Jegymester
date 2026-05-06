@@ -16,6 +16,8 @@ namespace JegymesterApp.DataContext.Dtos
         public int SeatNumber { get; set; }
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+
+        public string? MovieTitle { get; set; }
         public DateTime PurchaseDate { get; set; }
         public bool IsCancelled { get; set; }
         public bool IsVerified { get; set; }
