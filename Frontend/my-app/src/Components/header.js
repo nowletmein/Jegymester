@@ -59,12 +59,18 @@ const Header = () => {
               </Link>
 
               <div className="d-flex align-items-center gap-3">
-                {/* ADMIN ÉS FIÓK KEZELÉSE */}
                 {!user?.isGuest ? (
                   <>
-                    <Link to="/admin" className="nav-link text-warning fw-bold">
-                      <i className="fas fa-user-shield me-2"></i> Admin
-                    </Link>
+                    {user?.roles?.includes('Admin') && (
+                      <Link to="/admin" className="nav-link text-warning fw-bold">
+                        <i className="fas fa-user-shield me-2"></i> Admin
+                      </Link>
+                    )}
+                    {user?.roles?.includes('Cashier') && (
+                      <Link to="/cashier" className="nav-link text-info fw-bold">
+                        <i className="fas fa-cash-register me-2"></i> Pénztáros
+                      </Link>
+                    )}
                     <Link to="/profile" className="nav-link">
                       <i className="fas fa-user-circle me-2"></i> Fiókom
                     </Link>

@@ -41,17 +41,31 @@ function Admin() {
   const handleSubmit = async () => {
     const t = token || user?.token;
     const isAdd = form.mode === 'add';
-    const ep = `http://localhost:5000/api/${form.type === 'movie' ? 'Movies' : form.type === 'screening' ? 'Screenings' : 'Room'}/${isAdd ? 'Add' : 'Update'}`;
+    
+    let ep = `http://localhost:5000/api/${form.type === 'movie' ? 'Movies' : form.type === 'screening' ? 'Screenings' : 'Room'}`;
 
-    const res = await fetch(ep, {
-      method: isAdd ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${t}` },
-      body: JSON.stringify(form.data)
-    });
+    if (isAdd) {
+      ep += '/Add';
+    } else {
+      ep += `/Edit${form.type === 'movie' ? `/${form.data.id}` : ''}`;
+    }
 
-    if (res.ok) {
-      setForm({ active: false, type: null, mode: 'add', data: {} });
-      fetchData();
+    try {
+      const res = await fetch(ep, {
+        method: isAdd ? 'POST' : 'PUT',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${t}` 
+        },
+        body: JSON.stringify(form.data)
+      });
+
+      if (res.ok) {
+        setForm({ active: false, type: null, mode: 'add', data: {} });
+        fetchData();
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 

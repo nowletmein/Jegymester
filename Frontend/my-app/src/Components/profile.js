@@ -204,56 +204,69 @@ function Profile() {
                 <p className="login-text mb-0 text-center py-3">A kosarad jelenleg üres.</p>
               ) : (
                 <div className="table-responsive">
-                  <table className="table table-dark table-bordered align-middle">
-                    <thead>
-                      <tr>
-                        <th>Tétel</th>
-                        <th>Ár</th>
-                        <th>Műveletek</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cartItems.map((item, idx) => {
-                        const dateObj = item.screeningDate ? new Date(item.screeningDate) : null;
-                        const extractedTime = dateObj ? dateObj.toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) : "N/A";
-                        const extractedDate = dateObj ? dateObj.toLocaleDateString('hu-HU') : "";
-                        const dayName = dateObj ? dateObj.toLocaleDateString('hu-HU', { weekday: 'long' }) : "Ismeretlen nap";
+                    <table className="table table-dark table-bordered align-middle">
+                      <thead>
+                        <tr>
+                          <th>Film</th>
+                          <th>Vetítés dátuma</th>
+                          <th>Ár</th>
+                          <th>Műveletek</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {cartItems.map((item, idx) => {
+                          const dateObj = item.screeningDate ? new Date(item.screeningDate) : null;
+                          
+                          // Formats to: 2026. április 20., hétfő
+                          const extractedFullDate = dateObj ? dateObj.toLocaleDateString('hu-HU', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            weekday: 'long'
+                          }) : "N/A";
 
-                        return (
-                          <tr key={idx}>
-                            <td>
-                              <div className="fw-bold">{item.movieTitle || "Ismeretlen film"}</div>
-                              <small className="text-muted">{extractedDate} {extractedTime}</small>
-                            </td>
-                            <td>{item.price || 0} Ft</td>
-                            <td>
-                              <div className="d-flex gap-2">
-                                <button 
-                                  className="btn btn-sm btn-primary flex-grow-1"
-                                  onClick={() => navigate('/purchase', {
-                                    state: {
-                                      movie: { title: item.movieTitle || "Film" },
-                                      screening: {
-                                        screeningId: item.id,
-                                        time: extractedTime,
-                                        roomId: item.roomId,
-                                        date: item.screeningDate
-                                      },
-                                      day: `${dayName} (${extractedDate})`
-                                    }
-                                  })}
-                                >
-                                  Vásárlás
-                                </button>
-                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveFromCart(item.id)}>🗑️</button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                          const extractedTime = dateObj ? dateObj.toLocaleTimeString('hu-HU', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          }) : "N/A";
+
+                          return (
+                            <tr key={idx}>
+                              <td>
+                                <div className="fw-bold">{item.movieTitle || "Ismeretlen film"}</div>
+                              </td>
+                              <td>
+                                <div>{extractedFullDate}</div>
+                                <small className="text-info">{extractedTime}</small>
+                              </td>
+                              <td>{item.price || 0} Ft</td>
+                              <td>
+                                <div className="d-flex gap-2">
+                                  <button 
+                                    className="btn btn-sm btn-primary flex-grow-1"
+                                    onClick={() => navigate('/purchase', {
+                                      state: {
+                                        movie: { title: item.movieTitle || "Film" },
+                                        screening: {
+                                          screeningId: item.id,
+                                          time: extractedTime,
+                                          roomId: item.roomId,
+                                          date: item.screeningDate
+                                        }
+                                      }
+                                    })}
+                                  >
+                                    Vásárlás
+                                  </button>
+                                  <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveFromCart(item.id)}>🗑️</button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
               )}
             </div>
           </div>

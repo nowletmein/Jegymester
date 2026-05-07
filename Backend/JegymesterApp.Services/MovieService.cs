@@ -63,9 +63,22 @@ namespace JegymesterApp.Services {
                   ScreeningDtos = movie.Screenings.Select(s => new ScreeningDto {
                       Id = s.Id,
                       ScreeningDate = s.ScreeningDate,
-                      RoomId = s.Room.Id,
+                      RoomId = s.Room?.Id ?? 0,
                       Price = s.Price,
-                      MovieId = s.Movie.Id
+                      MovieId = s.Movie.Id,
+                      TicketDtos= s.Tickets.Select(t => new TicketDto {
+                          Id= t.Id,
+                          Email= t.Email,
+                          IsCancelled= t.IsCancelled,
+                          IsVerified= t.IsVerified,
+                          MovieTitle=movie.Title,
+                          Phone=t.Phone,
+                          SeatNumber=t.SeatNumber,
+                          Price=t.Screening.Price,
+                          PurchaseDate=t.PurchaseDate,
+                          ScreeningId=t.ScreeningId,
+                          
+                      }).ToList(),
                   }).ToList()
               };
               return movieDto;
@@ -166,9 +179,11 @@ namespace JegymesterApp.Services {
         public async Task<MovieDto> Get(int Id) {
 
             var movie = await _context.Movies
-               .Include(m => m.Screenings)
+           .Include(m => m.Screenings)
                .ThenInclude(s => s.Room)
-               .FirstOrDefaultAsync(x => x.Id == Id);
+           .Include(m => m.Screenings)
+               .ThenInclude(s => s.Tickets)
+           .FirstOrDefaultAsync(x => x.Id == Id);
 
             if (movie == null) {
                  throw new MovieNotFoundException("Movie Not Found");
@@ -182,6 +197,8 @@ namespace JegymesterApp.Services {
             var movies = await _context.Movies
             .Include(m => m.Screenings)
                 .ThenInclude(s => s.Room)
+            .Include(m => m.Screenings)
+                .ThenInclude(s => s.Tickets)
             .ToListAsync();
 
             return movies.Select(movie => MapToDto(movie)).ToList();

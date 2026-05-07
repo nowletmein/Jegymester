@@ -11,7 +11,7 @@ import SeatSelection from './seatselection.js';
 
 
 function Purchase() {
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth(); 
   const navigate = useNavigate();
   const location = useLocation();
   const { movie, screening } = location.state || {};
@@ -143,24 +143,30 @@ const [selectedSeats, setSelectedSeats] = useState([]);
 
   // Logic for the Add to Cart button
   const handleAddToCart = async () => {
-    if (user.isGuest) {
-        alert("A kosár funkció használatához kérjük jelentkezzen be!");
-        return;
+    if (!user || user.isGuest) {
+      alert("A kosár funkció használatához kérjük jelentkezzen be!");
+      return;
     }
-    
-    try {
-        const response = await fetch(`http://localhost:5000/api/Users/AddToCart/${user.id}/${screening.screeningId}`, {
-            method: 'POST',
-            headers: { 'accept': '*/*' }
-        });
 
-        if (response.ok) {
-            alert("Sikeresen a kosárhoz adva!");
-        } else {
-            alert("Hiba történt a kosárba helyezéskor.");
+    try {
+      // Fixed variable name to screening.screeningId
+      const response = await fetch(`http://localhost:5000/api/Users/AddToCart/${screening.screeningId}`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'accept': '*/*' 
         }
+      });
+
+      if (response.ok) {
+        alert("Sikeresen a kosárhoz adva!");
+      } else {
+        // If the token is expired or invalid, the backend usually returns 401
+        alert("Hiba történt a kosárba helyezéskor. Ellenőrizd a bejelentkezésed!");
+      }
     } catch (error) {
-        console.error("Hiba:", error);
+      console.error("Hiba:", error);
+      alert("Hálózati hiba történt.");
     }
   };
 

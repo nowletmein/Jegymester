@@ -115,20 +115,28 @@ namespace JegymesterApp.Services
             }
             return new ClaimsIdentity(claims, "Token");      
         }
-        public async Task<string> Register(UserCreateDto userCreateDto)
-        {
-            if(await _context.Users.AnyAsync(x => x.Email == userCreateDto.Email)) {
+        public async Task<string> Register(UserCreateDto userCreateDto) {
+            if (await _context.Users.AnyAsync(x => x.Email == userCreateDto.Email)) {
                 throw new UserAlreadyExistsException("User with this email adress already existis");
             }
 
+            // 1. Keep a reference to the plain text password
+            string plainTextPassword = userCreateDto.Password;
+
             var user = MapToUser(userCreateDto);
-            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
+            // 2. Hash the password for storage
+            user.Password = BCrypt.Net.BCrypt.HashPassword(plainTextPassword);
+
             if (!user.Roles.Any()) {
                 user.Roles.Add(await DefaultCustomerRoleAsync());
             }
+
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
-            return await Login(user.Email, user.Password);
+
+            // 3. Pass the PLAIN TEXT password to the Login method
+            return await Login(user.Email, plainTextPassword);
         }
 
         public async Task<int> Delete(int userId)

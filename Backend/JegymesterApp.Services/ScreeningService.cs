@@ -38,7 +38,7 @@ namespace JegymesterApp.Services
             var screeningDto = new ScreeningDto() {
                 Id = screening.Id,
                 MovieId = screening.MovieId,
-                // Optional: Add MovieTitle to the ScreeningDto itself if needed
+                
                 MovieTitle = screening.Movie?.Title ?? "Ismeretlen",
                 ScreeningDate = screening.ScreeningDate,
                 Price = screening.Price,
@@ -54,7 +54,7 @@ namespace JegymesterApp.Services
                     IsCancelled = t.IsCancelled,
                     IsVerified = t.IsVerified,
                     SeatNumber = t.SeatNumber,
-                    // Use the screening object already passed in to avoid null references
+                    
                     MovieTitle = screening.Movie?.Title ?? "Ismeretlen"
                 }).ToList() ?? new List<TicketDto>()
             };
@@ -106,7 +106,7 @@ namespace JegymesterApp.Services
 
         public async Task<ScreeningDto> Get(int Id) {
               
-            var screening = await _context.Screenings.FirstOrDefaultAsync(x => x.Id == Id);
+            var screening = await _context.Screenings.Include(x => x.Tickets).Include(x => x.Movie).FirstOrDefaultAsync(x => x.Id == Id);
             if(screening == null)
             {
                 throw new ScreeningNotFoundException("Screening Not Found");
