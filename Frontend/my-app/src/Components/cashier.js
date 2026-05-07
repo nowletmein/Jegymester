@@ -1,101 +1,105 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Components/style/comp.css';
 import Header from './header.js';
 import Footer from './footer.js';
-
-const initialTickets = [
-  {
-    id: 1,
-    customerName: 'Kovács Anna',
-    movieTitle: 'Dűne: Második rész',
-    date: '2025-04-07',
-    time: '17:00',
-    seat: 'A12',
-    code: 'JEGY-1001',
-    status: 'Érvényes',
-    checked: false,
-  },
-  {
-    id: 2,
-    customerName: 'Nagy Péter',
-    movieTitle: 'Kung Fu Panda 4',
-    date: '2025-04-08',
-    time: '12:30',
-    seat: 'B05',
-    code: 'JEGY-1002',
-    status: 'Érvényes',
-    checked: true,
-  },
-  {
-    id: 3,
-    customerName: 'Szabó Lilla',
-    movieTitle: 'Godzilla x Kong',
-    date: '2025-04-09',
-    time: '19:00',
-    seat: 'C08',
-    code: 'JEGY-1003',
-    status: 'Érvénytelen',
-    checked: false,
-  },
-];
-
-const movieOptions = [
-  'Dűne: Második rész',
-  'Kung Fu Panda 4',
-  'Godzilla x Kong',
-  'Civil War',
-  'Ghostbusters: Frozen Empire',
-];
+// Change this line to match your file name on disk
+import { useAuth } from '../context/AuthContext.js'; 
 
 function Cashier() {
-  const [tickets, setTickets] = useState(initialTickets);
+  const { token } = useAuth();
+  const [tickets, setTickets] = useState([]);
   const [searchCode, setSearchCode] = useState('');
   const [selectedTicket, setSelectedTicket] = useState(null);
 
+  const BASE_URL = 'http://localhost:5000';
+
   const [saleForm, setSaleForm] = useState({
-    customerName: '',
-    movieTitle: '',
-    date: '',
-    time: '',
-    seat: '',
+    screeningId: '',
+    email: '',
+    phone: '',
+    seatNumber: '',
   });
 
-  const handleSearch = () => {
-    const foundTicket = tickets.find(
-      (ticket) => ticket.code.toLowerCase() === searchCode.trim().toLowerCase()
-    );
-
-    if (!foundTicket) {
-      alert('Nem található ilyen jegykód.');
-      setSelectedTicket(null);
-      return;
+  useEffect(() => {
+    if (token) {
+      fetchAllTickets();
     }
+  }, [token]);
 
-    setSelectedTicket(foundTicket);
+  const getAuthHeaders = () => ({
+    'accept': '*/*',
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+
+  const fetchAllTickets = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/api/Movies/GetAll`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.ok) {
+        const movies = await response.json();
+        
+        const allTickets = movies.flatMap(movie => 
+          movie.screeningDtos.flatMap(screening => 
+            screening.ticketDtos.map(ticket => ({
+              ...ticket,
+              movieTitle: movie.title, 
+              screeningDate: screening.screeningDate
+            }))
+          )
+        );
+
+        const sortedTickets = allTickets.sort((a, b) => 
+          new Date(b.purchaseDate) - new Date(a.purchaseDate)
+        );
+
+        setTickets(sortedTickets);
+      }
+    } catch (error) {
+      console.error('Error fetching all tickets:', error);
+    }
   };
 
-  const handleValidateTicket = () => {
+  const handleSearch = async () => {
+    if (!searchCode.trim()) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/Tickets/Get/${searchCode}`, {
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedTicket(data);
+      } else {
+        alert('Nem található ilyen jegykód.');
+        setSelectedTicket(null);
+      }
+    } catch (error) {
+      console.error('Error during search:', error);
+    }
+  };
+
+  const handleValidateTicket = async () => {
     if (!selectedTicket) return;
 
-    if (selectedTicket.status !== 'Érvényes') {
-      alert('Ez a jegy nem érvényes, ezért nem igazolható vissza.');
-      return;
+    try {
+      const response = await fetch(`${BASE_URL}/api/Tickets/VerifyTicket/${selectedTicket.id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders()
+      });
+
+      if (response.ok) {
+        alert('A jegy sikeresen ellenőrizve és visszaigazolva.');
+        setSelectedTicket({ ...selectedTicket, isVerified: true });
+        fetchAllTickets();
+      } else {
+        alert('Hiba történt a visszaigazolás során.');
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
     }
-
-    if (selectedTicket.checked) {
-      alert('Ez a jegy már vissza lett igazolva.');
-      return;
-    }
-
-    const updatedTickets = tickets.map((ticket) =>
-      ticket.id === selectedTicket.id
-        ? { ...ticket, checked: true }
-        : ticket
-    );
-
-    setTickets(updatedTickets);
-    setSelectedTicket((prev) => ({ ...prev, checked: true }));
-    alert('A jegy sikeresen ellenőrizve és visszaigazolva.');
   };
 
   const handleSaleChange = (e) => {
@@ -103,47 +107,29 @@ function Cashier() {
     setSaleForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleNewSale = (e) => {
+  const handleNewSale = async (e) => {
     e.preventDefault();
+    try {
+      const url = `${BASE_URL}/api/Tickets/CashierCreate/${saleForm.screeningId}/${saleForm.email}/${saleForm.phone}/${saleForm.seatNumber}`;
+      const response = await fetch(url, { 
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
 
-    if (
-      !saleForm.customerName ||
-      !saleForm.movieTitle ||
-      !saleForm.date ||
-      !saleForm.time ||
-      !saleForm.seat
-    ) {
-      alert('Kérlek tölts ki minden mezőt a helyszíni jegyvásárláshoz.');
-      return;
+      if (response.ok) {
+        alert('Sikeres rögzítés.');
+        setSaleForm({ screeningId: '', email: '', phone: '', seatNumber: '' });
+        fetchAllTickets();
+      } else {
+        alert('Hiba történt a rögzítés során.');
+      }
+    } catch (error) {
+      console.error('Sale error:', error);
     }
-
-    const newTicket = {
-      id: Date.now(),
-      customerName: saleForm.customerName,
-      movieTitle: saleForm.movieTitle,
-      date: saleForm.date,
-      time: saleForm.time,
-      seat: saleForm.seat,
-      code: `JEGY-${Date.now().toString().slice(-6)}`,
-      status: 'Érvényes',
-      checked: false,
-    };
-
-    setTickets((prev) => [newTicket, ...prev]);
-
-    setSaleForm({
-      customerName: '',
-      movieTitle: '',
-      date: '',
-      time: '',
-      seat: '',
-    });
-
-    alert('A helyszíni jegyvásárlás sikeresen rögzítve.');
   };
 
-  const validTicketCount = tickets.filter((ticket) => ticket.status === 'Érvényes').length;
-  const checkedTicketCount = tickets.filter((ticket) => ticket.checked).length;
+  const validTicketCount = tickets.filter((t) => !t.isCancelled).length;
+  const checkedTicketCount = tickets.filter((t) => t.isVerified).length;
 
   return (
     <>
@@ -164,14 +150,12 @@ function Cashier() {
               <p className="text-white mb-0">Rögzített jegy</p>
             </div>
           </div>
-
           <div className="col-md-4">
             <div className="login-card p-4 text-center" style={{ maxWidth: '100%' }}>
               <div className="brand-logo">{validTicketCount}</div>
               <p className="text-white mb-0">Érvényes jegy</p>
             </div>
           </div>
-
           <div className="col-md-4">
             <div className="login-card p-4 text-center" style={{ maxWidth: '100%' }}>
               <div className="brand-logo">{checkedTicketCount}</div>
@@ -184,74 +168,47 @@ function Cashier() {
           <div className="col-lg-5">
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>
               <h3 className="text-white mb-4">Jegy ellenőrzése</h3>
-
               <div className="mb-3">
-                <label className="form-label text-white">Jegykód</label>
+                <label className="form-label text-white">Jegykód (ID)</label>
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="pl. JEGY-1001"
+                  placeholder="pl. 14"
                   value={searchCode}
                   onChange={(e) => setSearchCode(e.target.value)}
                 />
               </div>
-
               <button className="btn btn-primary w-100 mb-4" onClick={handleSearch}>
                 Jegy keresése
               </button>
 
               {selectedTicket ? (
                 <div className="border border-secondary rounded p-3">
-                  <h5 className="text-white mb-3">{selectedTicket.movieTitle}</h5>
-
-                  <p className="login-text mb-2">
-                    <strong className="text-white">Név:</strong> {selectedTicket.customerName}
-                  </p>
-                  <p className="login-text mb-2">
-                    <strong className="text-white">Dátum:</strong> {selectedTicket.date}
-                  </p>
-                  <p className="login-text mb-2">
-                    <strong className="text-white">Időpont:</strong> {selectedTicket.time}
-                  </p>
-                  <p className="login-text mb-2">
-                    <strong className="text-white">Szék:</strong> {selectedTicket.seat}
-                  </p>
-                  <p className="login-text mb-2">
-                    <strong className="text-white">Kód:</strong> {selectedTicket.code}
-                  </p>
+                  <h5 className="text-white mb-3">{selectedTicket.movieTitle || 'Film adatai'}</h5>
+                  <p className="login-text mb-2"><strong className="text-white">Név:</strong> {selectedTicket.userName || 'Vendég'}</p>
+                  <p className="login-text mb-2"><strong className="text-white">Email:</strong> {selectedTicket.email}</p>
+                  <p className="login-text mb-2"><strong className="text-white">Szék:</strong> {selectedTicket.seatNumber}</p>
+                  <p className="login-text mb-2"><strong className="text-white">Kód:</strong> {selectedTicket.id}</p>
                   <p className="login-text mb-2">
                     <strong className="text-white">Állapot:</strong>{' '}
-                    <span
-                      className={
-                        selectedTicket.status === 'Érvényes'
-                          ? 'text-success'
-                          : 'text-danger'
-                      }
-                    >
-                      {selectedTicket.status}
+                    <span className={selectedTicket.isCancelled ? 'text-danger' : 'text-success'}>
+                      {selectedTicket.isCancelled ? 'Törölt' : 'Érvényes'}
                     </span>
                   </p>
                   <p className="login-text mb-3">
                     <strong className="text-white">Ellenőrizve:</strong>{' '}
-                    {selectedTicket.checked ? (
-                      <span className="text-success">Igen</span>
-                    ) : (
-                      <span className="text-warning">Nem</span>
-                    )}
+                    {selectedTicket.isVerified ? <span className="text-success">Igen</span> : <span className="text-warning">Nem</span>}
                   </p>
-
                   <button
                     className="btn btn-primary w-100"
                     onClick={handleValidateTicket}
-                    disabled={selectedTicket.checked || selectedTicket.status !== 'Érvényes'}
+                    disabled={selectedTicket.isVerified || selectedTicket.isCancelled}
                   >
                     Jegy visszaigazolása
                   </button>
                 </div>
               ) : (
-                <p className="login-text mb-0">
-                  Keresés után itt jelennek meg a jegy adatai.
-                </p>
+                <p className="login-text mb-0">Keresés után itt jelennek meg a jegy adatai.</p>
               )}
             </div>
           </div>
@@ -259,75 +216,26 @@ function Cashier() {
           <div className="col-lg-7">
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>
               <h3 className="text-white mb-4">Helyszíni jegyvásárlás</h3>
-
               <form onSubmit={handleNewSale}>
                 <div className="mb-3">
-                  <label className="form-label text-white">Vásárló neve</label>
-                  <input
-                    type="text"
-                    name="customerName"
-                    className="form-control"
-                    value={saleForm.customerName}
-                    onChange={handleSaleChange}
-                  />
+                  <label className="form-label text-white">Email</label>
+                  <input type="email" name="email" className="form-control" value={saleForm.email} onChange={handleSaleChange} required />
                 </div>
-
                 <div className="mb-3">
-                  <label className="form-label text-white">Film</label>
-                  <select
-                    name="movieTitle"
-                    className="form-control"
-                    value={saleForm.movieTitle}
-                    onChange={handleSaleChange}
-                  >
-                    <option value="">Válassz filmet</option>
-                    {movieOptions.map((movie) => (
-                      <option key={movie} value={movie}>
-                        {movie}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="form-label text-white">Telefonszám</label>
+                  <input type="text" name="phone" className="form-control" value={saleForm.phone} onChange={handleSaleChange} required />
                 </div>
-
                 <div className="row">
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label text-white">Dátum</label>
-                    <input
-                      type="date"
-                      name="date"
-                      className="form-control"
-                      value={saleForm.date}
-                      onChange={handleSaleChange}
-                    />
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label text-white">Vetítés ID</label>
+                    <input type="number" name="screeningId" className="form-control" value={saleForm.screeningId} onChange={handleSaleChange} required />
                   </div>
-
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label text-white">Időpont</label>
-                    <input
-                      type="time"
-                      name="time"
-                      className="form-control"
-                      value={saleForm.time}
-                      onChange={handleSaleChange}
-                    />
-                  </div>
-
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label text-white">Szék</label>
-                    <input
-                      type="text"
-                      name="seat"
-                      className="form-control"
-                      placeholder="pl. D10"
-                      value={saleForm.seat}
-                      onChange={handleSaleChange}
-                    />
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label text-white">Szék száma</label>
+                    <input type="number" name="seatNumber" className="form-control" value={saleForm.seatNumber} onChange={handleSaleChange} required />
                   </div>
                 </div>
-
-                <button type="submit" className="btn btn-primary w-100">
-                  Jegyvásárlás rögzítése
-                </button>
+                <button type="submit" className="btn btn-primary w-100">Jegyvásárlás rögzítése</button>
               </form>
             </div>
           </div>
@@ -337,57 +245,42 @@ function Cashier() {
           <div className="col-12">
             <div className="login-card p-4" style={{ maxWidth: '100%' }}>
               <h3 className="text-white mb-4">Jegyek listája</h3>
-
-              {tickets.length === 0 ? (
-                <p className="login-text mb-0">Nincs rögzített jegy.</p>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-dark table-bordered align-middle">
-                    <thead>
-                      <tr>
-                        <th>Vásárló</th>
-                        <th>Film</th>
-                        <th>Dátum</th>
-                        <th>Időpont</th>
-                        <th>Szék</th>
-                        <th>Jegykód</th>
-                        <th>Állapot</th>
-                        <th>Ellenőrizve</th>
+              <div className="table-responsive">
+                <table className="table table-dark table-bordered align-middle">
+                  <thead>
+                    <tr>
+                      <th>Vásárló</th>
+                      <th>Film</th>
+                      <th>Vásárlás dátuma</th>
+                      <th>Szék</th>
+                      <th>Email</th>
+                      <th>Jegykód</th>
+                      <th>Állapot</th>
+                      <th>Ellenőrizve</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tickets.map((ticket) => (
+                      <tr key={ticket.id}>
+                        <td>{ticket.userName || 'Vendég'}</td>
+                        <td>{ticket.movieTitle}</td>
+                        <td>{new Date(ticket.purchaseDate).toLocaleString()}</td>
+                        <td>{ticket.seatNumber}</td>
+                        <td>{ticket.email}</td>
+                        <td>{ticket.id}</td>
+                        <td>
+                          <span className={ticket.isCancelled ? 'text-danger' : 'text-success'}>
+                            {ticket.isCancelled ? 'Törölt' : 'Érvényes'}
+                          </span>
+                        </td>
+                        <td>
+                          {ticket.isVerified ? <span className="text-success">Igen</span> : <span className="text-warning">Nem</span>}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {tickets.map((ticket) => (
-                        <tr key={ticket.id}>
-                          <td>{ticket.customerName}</td>
-                          <td>{ticket.movieTitle}</td>
-                          <td>{ticket.date}</td>
-                          <td>{ticket.time}</td>
-                          <td>{ticket.seat}</td>
-                          <td>{ticket.code}</td>
-                          <td>
-                            <span
-                              className={
-                                ticket.status === 'Érvényes'
-                                  ? 'text-success'
-                                  : 'text-danger'
-                              }
-                            >
-                              {ticket.status}
-                            </span>
-                          </td>
-                          <td>
-                            {ticket.checked ? (
-                              <span className="text-success">Igen</span>
-                            ) : (
-                              <span className="text-warning">Nem</span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
