@@ -122,19 +122,18 @@ namespace JegymesterApp.Services
             return 0;
         }
 
-        public async Task<TicketDto> Get(int ticketId)
-        {
-            var ticket = await _context.Tickets.Include(x => x.Screening).FirstOrDefaultAsync(x => x.Id == ticketId);
+        public async Task<TicketDto> Get(int ticketId) {
+            var ticket = await _context.Tickets
+                .Include(x => x.Screening)
+                    .ThenInclude(s => s.Room) 
+                .Include(x => x.User)         
+                .FirstOrDefaultAsync(x => x.Id == ticketId);
+
             if (ticket == null) {
                 throw new TicketNotFoundException($"There is no ticket with this ID: {ticketId}");
             }
-            /*  public int ScreeningId { get; set; }
-                public int? CreatorId { get; set; }
-                public string? CreatorName { get; set; }
-                public string Phone { get; set; }
-                public string Email { get; set; }*/
+
             return MapToTickeDto(ticket);
-            
         }
 
         public async Task<int> Verify(int ticketId)
